@@ -5,10 +5,11 @@
 
 현대자동차그룹 차량용 앱 개발 공모전 출품작이며, 심사를 위해 앱 소스를 공개합니다.
 
+> 크롬에서 이 페이지가 자동 번역되면 한국어 문장이 어색하게 바뀝니다. 주소창의 번역 아이콘에서 「원본 보기」 를 눌러 주십시오.
+
 ![Pleos Connect 에뮬레이터에서 실행한 onPTT](docs/car.png)
 
-- 앱 파일: [`apk/onptt-car-1.6.7.apk`](apk/onptt-car-1.6.7.apk) (Pleos Connect), [`apk/onptt-phone-1.6.7.apk`](apk/onptt-phone-1.6.7.apk) (스마트폰), 지문은 [`apk/SHA256SUMS.txt`](apk/SHA256SUMS.txt)
-  — 이 저장소 소스를 그대로 빌드하면 같은 지문의 파일이 나옵니다(운영에서 내려받는 1.6.7 과 같은 파일).
+- 앱 파일: [`apk/채한석_onPTT_release.apk`](apk/채한석_onPTT_release.apk) (Pleos Connect, release)
 - 웹 버전(설치 없이 참여): https://onsupporter.com/ptt
 - 사용 설명서: https://onsupporter.com/ptt/manual
 
@@ -62,24 +63,68 @@ app/src/phone  스마트폰 화면, 스마트폰 받아쓰기·읽어 주기(Ear
 무전 서버(음성 중계·채널·위치)는 운영 서비스(onsupporter.com)이며 이 저장소에는 넣지 않았습니다.
 앱은 빌드한 그대로 운영 서버에 붙습니다.
 
-## 빌드와 실행
+## APK 파일 위치
+
+- [`apk/채한석_onPTT_release.apk`](apk/채한석_onPTT_release.apk) — Pleos Connect 앱 1.6.7 (release, 패키지 `com.onsupporter.ptt.car`)
+- 지문: [`apk/SHA256SUMS.txt`](apk/SHA256SUMS.txt)
+
+## 실행 방법
+
+1. Pleos Connect 에뮬레이터를 마이크를 켠 채로 띄웁니다.
+   ```bash
+   emulator -avd <Pleos Connect 에뮬레이터 이름> -allow-host-audio
+   ```
+2. APK 를 운전자(사용자 10)에게 설치하고 실행합니다.
+   ```bash
+   adb install --user 10 apk/채한석_onPTT_release.apk
+   adb shell am start --user 10 -n com.onsupporter.ptt.car/com.onsupporter.ptt.MainActivity
+   ```
+3. 처음 실행하면 권한을 묻습니다. 모두 허용합니다(아래 「필요한 설정」).
+4. **공개방**에 이름(닉네임)을 넣고 「접속」 을 누릅니다. 로그인이나 회원가입은 없습니다.
+5. 무전 상대를 하나 더 세웁니다 - PC 브라우저에서 https://onsupporter.com/ptt 를 열고 다른 이름으로
+   공개방에 들어가면 같은 「로비」 채널에 함께 들어옵니다.
+6. 아래 송신 단추를 누르고 말하면 상대에게 들리고, 상대가 말하면 차 스피커로 나옵니다.
+
+### 기능별로 해 보기
+
+| 기능 | 해 보는 법 |
+|---|---|
+| 음성 명령 | 스피커 그릴 오른쪽 아래 마이크 단추를 누르고 「2번 채널」 「로비」 처럼 말합니다 |
+| 핸들 키 | `adb shell cmd car_service inject-key -t 1500 88` (탐색 ∨ 1.5초 = 송신), `adb shell cmd car_service inject-key 87` (탐색 ∧ = 음성 명령) |
+| 채널 이동 | 노브를 돌리거나 표시창의 채널 칩을 누릅니다 |
+| 일행 위치·경로 안내 | 오른쪽 지도에서 일행을 누르면 내비게이션 안내를 시작합니다 |
+| 개인방 | 「개인방」 을 고르고 여섯 자리 입장코드로 들어갑니다(코드는 웹에서 개인방을 만들면 나옵니다) |
+| 음악 내림 | 미디어를 틀어 둔 채 무전을 받으면 음악이 낮아졌다가 돌아옵니다 |
+
+## 테스트 환경 및 필요한 설정
+
+**테스트한 환경**
+
+- Pleos Connect 에뮬레이터 v2.1.0 (Android 14, API 34, arm64) · macOS(Apple Silicon)
+- 상대: PC 크롬 브라우저(https://onsupporter.com/ptt)
+- 서버: 운영 서버 onsupporter.com (앱에 들어 있어 따로 설정할 것 없음)
+
+**필요한 설정**
+
+- **인터넷**: onsupporter.com(443) 에 닿아야 합니다. 음성은 WebRTC(UDP)로 나르고, UDP 가 막힌 망에서는
+  웹소켓으로 자동으로 넘어갑니다.
+- **권한**(처음 실행 때 묻습니다): 마이크, 위치, 알림, 그리고 Pleos 차량 권한(기어·에너지·안전·내비·위치·음성).
+  Pleos 권한이 없어도 무전은 되고, 해당 차량 기능만 빠집니다.
+- **마이크**: 에뮬레이터를 `-allow-host-audio` 로 띄워야 맥(PC) 마이크가 들어갑니다. 없으면 무음이 나갑니다.
+  에뮬레이터는 켜질 때의 PC 소리 장치를 잡으므로, 이어폰을 바꿨다면 에뮬레이터를 다시 켭니다.
+- **소리 크기**: 에뮬레이터 차 볼륨이 45칸 중 20칸으로 시작해 작게 들립니다. 볼륨 키로 올립니다.
+- **에뮬레이터 사용자**: 앱은 운전자(사용자 10)에게 설치합니다(`--user 10`).
+
+## 직접 빌드하기
 
 필요한 것: JDK 17, Android SDK(compileSdk 36). Pleos SDK 는 로그인 없이 Pleos 메이븐 저장소에서 받습니다.
 
 ```bash
-./gradlew assembleCarDebug      # Pleos Connect 앱
-./gradlew assemblePhoneDebug    # 스마트폰 앱
+./gradlew assembleCarRelease    # Pleos Connect 앱 → app/build/outputs/apk/car/release/
+./gradlew assemblePhoneRelease  # 스마트폰 앱(무전 엔진을 같이 씁니다)
 ```
 
-Pleos Connect 에뮬레이터(v2.1.0)에 설치:
-
-```bash
-adb install --user 10 apk/onptt-car-1.6.7.apk   # 또는 직접 빌드한 app/build/outputs/apk/car/debug/app-car-debug.apk
-```
-
-- 에뮬레이터는 사용자 10(운전자)으로 실행되므로 `--user 10` 이 필요합니다.
-- 마이크를 쓰려면 에뮬레이터를 `-allow-host-audio` 로 띄웁니다.
-- 처음 실행하면 닉네임을 넣고 「접속」 을 누릅니다. 같은 채널에 웹(https://onsupporter.com/ptt)으로 한 명 더 들어오면 바로 무전을 주고받을 수 있습니다.
+서명 열쇠(`keystore.properties`)가 없으면 안드로이드 디버그 열쇠로 서명합니다.
 
 ## 저작권
 
