@@ -40,6 +40,13 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- **주행 중에도 쓰는 화면이다(운전 방해 최적화).** 이것이 없으면 기어가 P 를 벗어나는 순간
+                 차가 「주행 중에는 사용할 수 없습니다」 로 화면을 통째로 가린다 - 달리면서 쓰는 무전기가
+                 정작 달릴 때 막혔다(2026-11-03, 버추얼 콘솔로 기어 D). 주행 중 글자 입력·설정은 앱이
+                 스스로 막는다(Pleos.driving). -->
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
         </activity>
 
         <meta-data
