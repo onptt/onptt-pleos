@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 로그인 전 고른 알약 - 노란색(문간은 예전 빛 그대로). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/door_glass" />
+    <stroke android:width="2dp" android:color="@color/door_gold" />
+    <corners android:radius="999dp" />
+</shape>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 인터컴 스위치 — 꺼진 것. **꺼진 것이 꺼져 보여야 스위치다.** -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/card" />
+    <stroke android:width="2dp" android:color="@color/line" />
+    <corners android:radius="20dp" />
+</shape>

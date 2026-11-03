@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 지금 있는 자리. 알약 하나만 녹색 LED 로 선다(유리 뒤에서 빛나는 모양). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/led_glass" />
+    <stroke android:width="2dp" android:color="@color/gold" />
+    <corners android:radius="999dp" />
+</shape>

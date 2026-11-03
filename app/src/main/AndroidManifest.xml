@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- **UDP 길이 망을 들여다본다.** WebRTC 는 어느 길로 나갈지 고르려고
+         ConnectivityManager 를 부르는데, 이 권한이 없으면 그 자리에서
+         통째로 죽는다 - 네이티브라 예외도 안 올라오고 앱이 그냥 사라진다
+         (죽은 실 이름이 network_thread 였다). 둘 다 읽기만 하는 권한이라
+         사용자에게 묻지 않는다. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- 절전 예외를 여쭤 보는 화면을 띄우려면 이 선언이 있어야 한다.
+         없으면 안드로이드가 그 요청을 조용히 무시한다 - 단추를 눌러도
+         아무 일도 안 일어난다. 실제로 그랬다. -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+
+    <!-- 위치 보내기. **켠 행사에서만, 무전을 켠 동안만** 쓴다.
+         야외 행사에서 「3번 게이트 쪽 누구 있어요」 를 무전으로 묻지 않게
+         하는 자리다. 허락을 안 해도 무전은 그대로 돈다 - 위치를 못 보는
+         것과 말을 못 하는 것은 다른 일이다. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+
+    <application
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:usesCleartextTraffic="true"
+        android:theme="@style/Theme.Ptt">
+
+        <!-- 화면이 꺼져도 듣고 있어야 한다. 이 서비스가 없으면 안드로이드가
+             몇 분 만에 프로세스를 재운다 - Staff는 무전이 죽은 줄도 모른다. -->
+        <service
+            android:name=".PttService"
+            android:exported="false"
+            android:foregroundServiceType="microphone|location" />
+    </application>
+</manifest>

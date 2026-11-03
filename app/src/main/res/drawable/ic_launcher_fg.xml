@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 런처 아이콘. 온서포터 표다 — 글자가 아니라 표를 쓴다. 48dp 자리에
+     「온서포터」 네 글자를 넣으면 아무것도 안 읽힌다.
+
+     **양옆 사람이 가장자리에 붙으면 안 된다.** 적응형 아이콘은 기기마다
+     가장자리를 다르게 깎아서(동그라미·네모·물방울), 붙어 있으면 어떤
+     폰에서는 잘린다. 표를 재서 108 안에 48 너비로 넣었다 —
+     늘 보이는 가운데 72 안에 넉넉히 들어온다. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <group android:scaleX="0.86" android:scaleY="0.86"
+           android:translateX="26.44" android:translateY="26.44">
+        <path android:fillColor="#e8edf7"
+              android:fillAlpha=".78"
+              android:pathData="M4.30,30.40a5.60,5.60 0 1,0 11.20,0a5.60,5.60 0 1,0 -11.20,0Z" />
+        <path android:fillColor="#e8edf7"
+              android:fillAlpha=".78"
+              android:pathData="M9.90,38.80h0.00a4.60,4.60 0 0,1 4.60,4.60v2.10a4.60,4.60 0 0,1 -4.60,4.60h-0.00a4.60,4.60 0 0,1 -4.60,-4.60v-2.10a4.60,4.60 0 0,1 4.60,-4.60Z" />
+        <path android:fillColor="#fbbf24"
+              android:pathData="M26.40,19.60a5.60,5.60 0 1,0 11.20,0a5.60,5.60 0 1,0 -11.20,0Z" />
+        <path android:fillColor="#e8edf7"
+              android:pathData="M32.10,27.90h0.00a4.60,4.60 0 0,1 4.60,4.60v12.90a4.60,4.60 0 0,1 -4.60,4.60h-0.00a4.60,4.60 0 0,1 -4.60,-4.60v-12.90a4.60,4.60 0 0,1 4.60,-4.60Z" />
+        <path android:fillColor="#e8edf7"
+              android:fillAlpha=".78"
+              android:pathData="M48.60,27.50a5.60,5.60 0 1,0 11.20,0a5.60,5.60 0 1,0 -11.20,0Z" />
+        <path android:fillColor="#e8edf7"
+              android:fillAlpha=".78"
+              android:pathData="M54.20,35.90h0.00a4.60,4.60 0 0,1 4.60,4.60v4.90a4.60,4.60 0 0,1 -4.60,4.60h-0.00a4.60,4.60 0 0,1 -4.60,-4.60v-4.90a4.60,4.60 0 0,1 4.60,-4.60Z" />
+    </group>
+</vector>

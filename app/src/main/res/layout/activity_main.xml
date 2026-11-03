@@ -1,0 +1,986 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="@color/bg" android:fillViewport="true"
+    android:fitsSystemWindows="true"
+    android:clipToPadding="false">
+
+    <LinearLayout
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="18dp" android:paddingEnd="18dp"
+        android:paddingTop="24dp" android:paddingBottom="28dp">
+
+        <!-- 머리줄. 제목 왼쪽, 설정 오른쪽. -->
+        <LinearLayout
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:gravity="center_vertical">
+
+            <TextView android:id="@+id/title"
+                android:layout_width="0dp" android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="@string/app_name" android:textColor="@color/text"
+                android:textSize="22sp" android:textStyle="bold" />
+
+            <!-- 어느 자리로 들어가나. **제목 바로 옆이다.**
+
+                 onPTT 는 온서포터 행사와 들어가는 길이 통째로 다르다 -
+                 번호도 계정도 안 묻고 닉네임 하나로 들어간다. 그 길을
+                 로그인 칸 안에 또 하나의 갈래로 두면, 행사 번호를 받아
+                 온 사람이 매번 그것을 지나야 한다. 화면을 통째로
+                 바꾸는 일이라 바꾸는 손잡이도 화면 꼭대기에 둔다. -->
+            <TextView android:id="@+id/doorSwitch"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="onPTT 로 전환" android:textColor="@color/door_gold"
+                android:textSize="12sp" android:background="@drawable/chip"
+                android:paddingStart="12dp" android:paddingEnd="12dp"
+                android:paddingTop="6dp" android:paddingBottom="6dp" />
+
+            <!-- 설정. 주소처럼 한 번 정하면 끝나는 것을 첫 화면에 늘어
+                 놓으면, 매번 로그인하려고 그 밑을 지나야 한다. -->
+            <TextView android:id="@+id/menu"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="≡" android:textColor="@color/text"
+                android:textSize="28sp" android:gravity="center"
+                android:paddingStart="16dp" android:paddingEnd="4dp"
+                android:paddingTop="2dp" android:paddingBottom="6dp" />
+        </LinearLayout>
+
+        <!-- 지금 상태. 알약 하나로 둔다 - 화면을 힐끗 보고 마는 자리라
+             글줄보다 덩어리가 먼저 읽힌다. -->
+        <!-- 상태 알약과 탭이 한 줄에 선다. 알약은 짧아서 그 줄 오른쪽이
+             늘 비어 있었는데, 탭을 따로 한 줄 내리면 지도가 그만큼
+             밀린다 - 폰 화면에서 한 줄은 크다. -->
+        <LinearLayout
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:gravity="center_vertical"
+            android:layout_marginTop="8dp">
+
+            <!-- **줄어드는 쪽은 이쪽이다.**
+                 접은 폰의 커버 화면은 폭이 좁다. 알약이 제 길이를 다
+                 고집하면 오른쪽 끝의 잠금 칩이 화면 밖으로 밀려 잘린다 -
+                 상태 글은 뒤가 잘려도 읽히지만, 단추는 잘리면 못 누른다. -->
+            <!-- 늘어나는 것은 이 빈 칸이 맡고, 알약은 제 글만큼만
+                 차지한다. 알약에 바로 weight 를 주면 넓은 화면에서
+                 남는 자리를 알약이 다 먹어 길쭉한 막대가 된다. -->
+            <FrameLayout
+                android:layout_width="0dp" android:layout_weight="1"
+                android:layout_height="wrap_content">
+                <TextView android:id="@+id/status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/muted"
+                    android:maxLines="1" android:ellipsize="end"
+                    android:textSize="13sp" android:text="연결 안 됨"
+                    android:background="@drawable/chip"
+                    android:paddingStart="12dp" android:paddingEnd="12dp"
+                    android:paddingTop="6dp" android:paddingBottom="6dp" />
+            </FrameLayout>
+
+            <!-- 소리가 어느 길로 다니나. 베타 동안 이것이 시험의 절반이다 -
+                 안 보이면 켠 줄 알고 옛 길로 재게 된다. 붙어 있을 때만 뜬다. -->
+            <TextView android:id="@+id/udpChip"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="@color/green" android:textSize="12sp"
+                android:maxLines="1" android:text="UDP" android:visibility="gone"
+                android:background="@drawable/chip"
+                android:layout_marginEnd="6dp"
+                android:paddingStart="10dp" android:paddingEnd="10dp"
+                android:paddingTop="5dp" android:paddingBottom="5dp" />
+
+            <!-- 탭. 현장이 본디 자리고, 위치는 켠 행사에서만 나온다. -->
+            <!-- 탭은 제 폭만 차지한다. 남는 자리는 왼쪽 알약이 먹고,
+                 좁아지면 알약이 줄어든다 - 그래야 잠금 칩이 안 잘린다. -->
+            <LinearLayout android:id="@+id/tabRow"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:layout_marginStart="10dp"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- 설정. 평소엔 접혀 있다. -->
+        <LinearLayout android:id="@+id/settings"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:visibility="gone"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/card" android:padding="16dp">
+
+            <TextView
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="설정" android:textColor="@color/text"
+                android:textSize="16sp" android:textStyle="bold" />
+
+            <!-- 인터넷 없는 행사장 노트북에 붙을 때만 주소를 손으로 적는다.
+                 그 밖에는 온서포터로 간다 - Staff가 주소를 받아 적을 일이
+                 없어야 한다. -->
+            <!-- 이 앱은 **Staff 몫**이다. 진행자가 쓸 일도 있지만 그쪽은
+                 콘솔이 본체라, 기본은 Staff 번호로 들어가는 길이다. -->
+            <CheckBox android:id="@+id/asHost"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="진행자로 들어갑니다"
+                android:textColor="@color/text" android:textSize="15sp" />
+
+            <TextView
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="Staff가 아니라 진행자 계정으로 무전을 쓰실 때만 켜세요."
+                android:textColor="@color/muted" android:textSize="12sp"
+                android:layout_marginTop="2dp" android:layout_marginBottom="6dp" />
+
+            <CheckBox android:id="@+id/onsite"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="현장 노트북에 붙습니다"
+                android:textColor="@color/text" android:textSize="15sp" />
+
+            <TextView android:id="@+id/onsiteWhy"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="인터넷 없이 노트북 한 대로 돌리는 행사입니다. 주소와 진행자 PIN 을 받아 적습니다."
+                android:textColor="@color/muted" android:textSize="12sp"
+                android:layout_marginTop="2dp" />
+
+            <EditText android:id="@+id/server"
+                android:background="@drawable/field" android:padding="14dp"
+                android:textSize="16sp"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="10dp" android:visibility="gone"
+                android:hint="노트북 주소 — 예: http://192.168.0.10:8080"
+                android:textColor="@color/text" android:textColorHint="@color/muted"
+                android:inputType="textUri" android:autofillHints="" />
+
+            <TextView android:id="@+id/serverNow"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="8dp" android:textColor="@color/muted"
+                android:textSize="12sp" android:text="" />
+
+            <!-- 판 번호. 「제 폰만 그런가」 를 가르는 첫 물음이 이것이다 -
+                 물어보면 대개 어디서 보는지를 모른다. -->
+            <TextView android:id="@+id/appVer"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="14dp" android:textColor="@color/muted"
+                android:textSize="12sp" android:text="" />
+
+            <!-- 오픈소스 고지. 설치 파일로 나가는 쪽이 의무가 제일
+                 무겁다 - 찾아갈 수 있어야 고지다. -->
+            <TextView android:id="@+id/licenses"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="오픈소스 고지"
+                android:textColor="@color/muted" android:textSize="13sp"
+                android:paddingTop="6dp" android:paddingBottom="6dp" />
+
+            <!-- 한 번 누르고 마는 것들은 여기. 일하는 화면에 두면 누름쇠
+                 바로 밑에 「무전 끄기」 가 놓여, 말하려다 끄게 된다. -->
+            <Button android:id="@+id/doze" style="@style/Ptt.Button.Ghost"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="16dp" android:text="배터리 최적화에서 빼기" />
+
+            <Button android:id="@+id/off" style="@style/Ptt.Button.Ghost"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="8dp" android:text="무전 끄기"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- 붙기 전에만 보이는 칸. 붙고 나면 접는다. -->
+        <LinearLayout android:id="@+id/setup"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:layout_marginTop="16dp"
+            android:background="@drawable/card" android:padding="16dp">
+
+
+            <!-- onPTT 로 들어오는 길. **닉네임 하나면 된다.**
+
+                 행사 번호도 로그인도 안 묻는다 - 공개방은 아무나 들어오는
+                 자리이고, 그 앞에 절차를 세우면 무전을 켜 보기도 전에
+                 돌아선다. 서버 쪽 규칙(backend/onptt.py)과 같다.
+
+                 들어가는 문이 둘이다. 공개방은 로비와 1~5번이 늘 열려
+                 있고, 개인방은 받으신 여섯 자리로만 열린다. -->
+            <LinearLayout android:id="@+id/byOnptt"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:visibility="gone">
+
+                <!-- 공개방이 먼저다 - 대부분이 그쪽이다. -->
+                <LinearLayout
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView android:id="@+id/onpttOpenPick"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="공개방" android:textColor="@color/gold"
+                        android:textSize="13sp" android:background="@drawable/chip_on"
+                        android:paddingStart="16dp" android:paddingEnd="16dp"
+                        android:paddingTop="8dp" android:paddingBottom="8dp" />
+
+                    <TextView android:id="@+id/onpttRoomPick"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="개인방" android:textColor="@color/muted"
+                        android:textSize="13sp" android:background="@drawable/chip"
+                        android:paddingStart="16dp" android:paddingEnd="16dp"
+                        android:paddingTop="8dp" android:paddingBottom="8dp" />
+                </LinearLayout>
+
+                <TextView android:id="@+id/onpttSay"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="닉네임 하나면 들어가십니다 — 행사 번호도 로그인도 없습니다"
+                    android:textColor="@color/muted" android:textSize="12sp" />
+
+                <!-- 개인방을 고르셨을 때만. 여는 것은 브라우저에서 하고,
+                     폰은 받으신 번호로 들어가는 자리다. -->
+                <EditText android:id="@+id/onpttRoom"
+                    android:background="@drawable/field" android:padding="14dp"
+                    android:textSize="16sp" android:visibility="gone"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp" android:hint="개인방 입장코드 000000"
+                    android:textColor="@color/text" android:textColorHint="@color/muted"
+                    android:inputType="number" android:maxLength="6" android:autofillHints="" />
+
+                <EditText android:id="@+id/onpttNick"
+                    android:background="@drawable/field" android:padding="14dp"
+                    android:textSize="16sp"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp" android:hint="onPTT 닉네임"
+                    android:textColor="@color/text" android:textColorHint="@color/muted"
+                    android:inputType="text" android:maxLength="20" android:autofillHints="" />
+
+                <TextView
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="닉네임은 이 폰에 남습니다 — 다음에 들어오시면 그대로 뜹니다"
+                    android:textColor="@color/muted" android:textSize="11sp" />
+
+                <Button android:id="@+id/onpttGo"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp" android:text="onPTT 들어가기" />
+
+                <!-- 복구 글자. **평소에는 접어 둔다** - 처음 들어오시는 분
+                     쪽이 훨씬 많은데, 늘 펴 두면 적어 둔 글자가 없는 분이
+                     「무엇을 넣어야 하나」 에서 멈춘다. -->
+                <TextView android:id="@+id/onpttWordOpen"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp" android:gravity="center"
+                    android:text="전에 쓰시던 자리 잇기 — 복구 글자"
+                    android:textColor="@color/muted" android:textSize="12sp"
+                    android:paddingTop="6dp" android:paddingBottom="6dp" />
+
+                <LinearLayout android:id="@+id/onpttWordBox"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="vertical" android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="처음 들어오실 때 받으신 글자를 넣으시면 그 자리를 그대로 잇습니다 — 닉네임도 개인방도 따라옵니다"
+                        android:textColor="@color/muted" android:textSize="11sp" />
+
+                    <EditText android:id="@+id/onpttWord"
+                        android:background="@drawable/field" android:padding="14dp"
+                        android:textSize="16sp"
+                        android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp" android:hint="복구 글자"
+                        android:textColor="@color/text" android:textColorHint="@color/muted"
+                        android:inputType="text" android:autofillHints="" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Staff로 들어오는 길. 이쪽이 기본이다.
+
+                 번호는 진행자 PIN 과 **다른 번호**다. Staff에게 진행자 PIN 을
+                 주면 그 번호로 추첨까지 돌아간다 - 그래서 보드만 여는 번호를
+                 따로 받는다.
+
+                 번호는 여럿이 나눠 쓰므로 이름을 같이 받는다. 「그 테이블
+                 누가 갔었냐」 에 답할 수 있어야 한다. -->
+            <LinearLayout android:id="@+id/byStaff"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="진행자에게 받은 여섯 자리 번호"
+                    android:textColor="@color/muted" android:textSize="12sp" />
+
+                <EditText android:id="@+id/staffCode"
+                    android:background="@drawable/field" android:padding="14dp"
+                    android:textSize="16sp"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp" android:hint="000000"
+                    android:textColor="@color/text" android:textColorHint="@color/muted"
+                    android:inputType="number" android:maxLength="6" android:autofillHints="" />
+
+                <EditText android:id="@+id/staffName"
+                    android:background="@drawable/field" android:padding="14dp"
+                    android:textSize="16sp"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp" android:hint="내 이름 (예: 김진행)"
+                    android:textColor="@color/text" android:textColorHint="@color/muted"
+                    android:inputType="text" android:maxLength="20" android:autofillHints="" />
+
+                <Button android:id="@+id/staffGo"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp" android:text="Staff 접속" />
+            </LinearLayout>
+
+            <!-- 계정으로 들어오는 길. 무전에서 「누가 말하는가」 는 발신자
+                 표시가 전부라, 다들 같은 이름으로 뜨면 쓸모가 없다.
+
+                 이쪽이 기본이다. 현장 노트북에 붙을 때만 아래 PIN 으로
+                 바뀐다 - 두 길을 같이 내놓으면 무엇으로 들어가야 하는지
+                 매번 고르게 된다. -->
+            <LinearLayout android:id="@+id/byAccount"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical">
+            <EditText android:background="@drawable/field"
+            android:padding="14dp" android:textSize="16sp" android:id="@+id/loginId"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="8dp" android:hint="아이디 (이메일)"
+                android:textColor="@color/text" android:textColorHint="@color/muted"
+                android:inputType="textEmailAddress" android:autofillHints="" />
+
+            <EditText android:background="@drawable/field"
+            android:padding="14dp" android:textSize="16sp" android:id="@+id/loginPw"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="8dp" android:hint="비밀번호"
+                android:textColor="@color/text" android:textColorHint="@color/muted"
+                android:inputType="textPassword" android:autofillHints="" />
+
+            <EditText android:background="@drawable/field"
+            android:padding="14dp" android:textSize="16sp" android:id="@+id/loginOtp"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="8dp" android:hint="OTP 여섯 자리"
+                android:textColor="@color/text" android:textColorHint="@color/muted"
+                android:inputType="number" android:maxLength="6" android:autofillHints="" />
+
+            <Button android:id="@+id/login"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="10dp" android:text="계정으로 접속" />
+
+            </LinearLayout>
+
+            <!-- 인터넷이 없는 현장 노트북에는 계정이 없다. 설정에서
+                 「현장 노트북에 붙습니다」 를 켜야 나온다. -->
+            <LinearLayout android:id="@+id/byPin"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="현장 노트북에는 계정이 없습니다"
+                android:textColor="@color/muted" android:textSize="12sp" />
+
+            <EditText android:background="@drawable/field"
+            android:padding="14dp" android:textSize="16sp" android:id="@+id/pin"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="4dp" android:hint="진행자 PIN"
+                android:textColor="@color/text" android:textColorHint="@color/muted"
+                android:inputType="numberPassword" android:autofillHints="" />
+
+            <Button android:id="@+id/go"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="8dp" android:text="PIN 으로 접속" />
+            </LinearLayout>
+
+        <!-- 무슨 일이 있었는지는 **누른 자리 바로 밑에** 적는다. 화면 맨
+             아래 기록에만 적었더니, 눌러도 아무 반응이 없는 것처럼
+             보였다 - 실제로는 까닭을 적고 있었는데 그 자리가 한참
+             아래라 아무도 못 봤다.
+
+             **셋 중 어느 길로 들어오든 보여야 한다.** 계정 칸 안에 두었더니
+             Staff 번호로 들어오다 막힌 사람에게는 「안 들어가진다」 만 남고
+             까닭은 화면 어디에도 없었다. -->
+        <TextView android:id="@+id/msg"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="10dp" android:visibility="gone"
+            android:textColor="#fca5a5" android:textSize="13sp"
+            android:padding="10dp" android:background="#22f87171" />
+        </LinearLayout>
+
+        <!-- 로그인 화면 아래 발행처. 어느 프로그램에 아이디를 넣는지가
+             화면에 남아 있어야 한다 - 행사장에서 받아 깐 앱이라 더 그렇다. -->
+        <ImageView android:id="@+id/markLogin"
+            android:layout_width="match_parent" android:layout_height="26dp"
+            android:scaleType="fitCenter"
+            android:layout_marginTop="28dp" android:layout_marginBottom="6dp"
+            android:src="@drawable/onsupporter"
+            android:alpha="0.5"
+            android:importantForAccessibility="no" />
+
+        <!-- 붙은 뒤에만 보이는 칸.
+             로그인 화면에 누름쇠와 기록과 끄기가 같이 깔려 있었다.
+             아직 들어가지도 않았는데 「무전 끄기」 가 보이면, 이 화면이
+             무엇을 하는 자리인지부터 흐려진다. -->
+        <LinearLayout android:id="@+id/work"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:visibility="gone">
+
+        <!-- 위치. 켠 행사에서만 보인다. -->
+        <LinearLayout android:id="@+id/wherePane"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:visibility="gone">
+
+            <!-- 지금 붙어 있는 사람들. **이 칸에도 있어야 한다.**
+                 현장 탭에만 두었더니, 거리를 켜도 볼 곳이 지도 말풍선뿐이라
+                 쓸모가 없었다 - 누가 얼마나 떨어져 있는지는 이름과 나란히
+                 놓고 봐야 읽힌다. 눌러서 그 사람 자리로 지도를 옮긴다. -->
+            <HorizontalScrollView
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="10dp" android:scrollbars="none">
+                <LinearLayout android:id="@+id/whereWhoRow"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:orientation="horizontal" />
+            </HorizontalScrollView>
+
+            <!-- 윗줄(현장 · 잠금)과 바짝 붙어 있었다. 아래 손잡이 줄만큼
+                 띄워 둔다 - 지도는 화면을 크게 먹는 칸이라 경계가 보여야 한다. -->
+            <WebView android:id="@+id/map"
+                android:layout_width="match_parent" android:layout_height="520dp"
+                android:layout_marginTop="10dp"
+                android:background="@color/card" />
+
+            <!-- 지도 손잡이. 차로 움직이며 보는 자리라 **한 줄에 모은다.** -->
+            <LinearLayout
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:layout_marginTop="10dp">
+                <!-- 넷이 한 줄을 나눠 쓰므로 **글자가 줄바꿈되지 않게** 한다.
+                     「따라 / 가는 / 중」 으로 쪼개지면 단추 구실을 못 한다. -->
+                <Button android:id="@+id/mapFit" style="@style/Ptt.Button.Ghost"
+                    android:layout_width="0dp" android:layout_weight="1"
+                    android:layout_height="wrap_content" android:text="한눈에"
+                    android:textSize="12sp" android:maxLines="1"
+                    android:singleLine="true" android:ellipsize="none"
+                    android:paddingStart="2dp" android:paddingEnd="2dp"
+                    android:autoSizeTextType="uniform"
+                    android:autoSizeMinTextSize="9sp" android:autoSizeMaxTextSize="12sp" />
+                <!-- 켜 두면 5초마다 스스로 맞춘다. 달리는 차에서 「한눈에」 를
+                     계속 누를 손은 없다. -->
+                <Button android:id="@+id/mapFollow" style="@style/Ptt.Button.Ghost"
+                    android:layout_width="0dp" android:layout_weight="1"
+                    android:layout_height="wrap_content" android:text="따라가기"
+                    android:textSize="12sp" android:maxLines="1"
+                    android:singleLine="true" android:ellipsize="none"
+                    android:paddingStart="2dp" android:paddingEnd="2dp"
+                    android:autoSizeTextType="uniform"
+                    android:autoSizeMinTextSize="9sp" android:autoSizeMaxTextSize="12sp"
+                    android:layout_marginStart="6dp" />
+                <!-- 나와 얼마나 떨어져 있나. 이름 옆에 붙는다. -->
+                <Button android:id="@+id/mapFar" style="@style/Ptt.Button.Ghost"
+                    android:layout_width="0dp" android:layout_weight="1"
+                    android:layout_height="wrap_content" android:text="거리"
+                    android:textSize="12sp" android:maxLines="1"
+                    android:singleLine="true" android:ellipsize="none"
+                    android:paddingStart="2dp" android:paddingEnd="2dp"
+                    android:autoSizeTextType="uniform"
+                    android:autoSizeMinTextSize="9sp" android:autoSizeMaxTextSize="12sp"
+                    android:layout_marginStart="6dp" />
+                <!-- 바탕. 어두운 회색만으로는 어디인지를 알 수가 없다. -->
+                <Button android:id="@+id/mapBase" style="@style/Ptt.Button.Ghost"
+                    android:layout_width="0dp" android:layout_weight="1"
+                    android:layout_height="wrap_content" android:text="컬러"
+                    android:textSize="12sp" android:maxLines="1"
+                    android:singleLine="true" android:ellipsize="none"
+                    android:paddingStart="2dp" android:paddingEnd="2dp"
+                    android:autoSizeTextType="uniform"
+                    android:autoSizeMinTextSize="9sp" android:autoSizeMaxTextSize="12sp"
+                    android:layout_marginStart="6dp" />
+            </LinearLayout>
+
+            <TextView android:id="@+id/whereWhy"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="10dp" android:textColor="@color/muted"
+                android:textSize="13sp" android:text="" />
+        </LinearLayout>
+
+        <!-- 현장. 요청과 대화와 무전이 여기 있다. -->
+        <LinearLayout android:id="@+id/herePane"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+        <!-- 현장 요청. **Staff 화면의 주인공이다.**
+             웹 보드는 화면을 앞에 켜 둔 채로 두어야 알림이 오는데, 행사장
+             에서 폰을 손에 들고 화면만 보고 있을 수는 없다. 앱은 화면을
+             꺼도 살아 있다 - 그래서 여기에 있어야 한다. -->
+        <LinearLayout android:id="@+id/askPane"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:visibility="gone">
+
+            <!-- 콘솔이 내린 지시. **요청보다 위다** — 참석자가 부른 것보다
+                 진행자가 시킨 것이 먼저다. -->
+            <LinearLayout android:id="@+id/noteList"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:layout_marginBottom="6dp" />
+
+            <TextView android:id="@+id/askHead"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="현장 요청" android:textColor="@color/text"
+                android:textSize="17sp" android:textStyle="bold" />
+
+            <TextView android:id="@+id/askNone"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="10dp" android:layout_marginBottom="4dp"
+                android:text="아직 부른 분이 없습니다."
+                android:textColor="@color/muted" android:textSize="14sp" />
+
+            <LinearLayout android:id="@+id/askList"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </LinearLayout>
+
+        <!-- 대화. 현장 요청이 「와 주세요」 라면 이쪽은 「물어봅니다」 다.
+             둘 다 참석자가 부르는 것이라 한 화면에 있어야 한다 - 요청만
+             보고 있다가 물음을 놓치면 참석자 쪽에서는 아무도 안 받은
+             것과 같다. -->
+        <LinearLayout android:id="@+id/talkPane"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:visibility="gone"
+            android:layout_marginTop="22dp">
+
+            <LinearLayout
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical">
+
+                <TextView android:id="@+id/talkHead"
+                    android:layout_width="0dp" android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="대화" android:textColor="@color/text"
+                    android:textSize="17sp" android:textStyle="bold" />
+
+                <Button android:id="@+id/talkBack" style="@style/Ptt.Button.Ghost"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="목록" android:visibility="gone" />
+            </LinearLayout>
+
+            <TextView android:id="@+id/talkNone"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="10dp" android:layout_marginBottom="4dp"
+                android:text="아직 오간 말이 없습니다."
+                android:textColor="@color/muted" android:textSize="14sp" />
+
+            <LinearLayout android:id="@+id/talkList"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+            <LinearLayout android:id="@+id/talkSend"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:layout_marginTop="10dp"
+                android:visibility="gone">
+
+                <EditText android:id="@+id/talkText" style="@style/Ptt.Edit"
+                    android:layout_width="0dp" android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:hint="보낼 말" android:inputType="textMultiLine|textCapSentences"
+                    android:maxLines="3" android:padding="14dp" android:textSize="16sp"
+                    android:importantForAutofill="no" />
+
+                <Button android:id="@+id/talkGo"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp" android:text="보내기" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 무전은 요청·대화 아래. Staff에게 주인공은 그 둘이다. -->
+        <TextView android:id="@+id/pttHead"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="22dp" android:text="무전"
+            android:textColor="@color/text" android:textSize="17sp"
+            android:textStyle="bold" android:visibility="gone" />
+
+        <!-- 채널 알약. **머리글 바로 밑이다.** 「무전」 과 「전체」 사이에
+             1:1 칸이 끼면 지금 어느 자리에 있는지가 멀어진다. -->
+        <!-- **옆으로 흐르게 둔다.** 그냥 한 줄에 늘어놓았더니 로비부터
+             5번까지 여섯이 폭을 넘겨, 마지막 알약이 몇 픽셀짜리 조각으로
+             찌그러졌다 - 깨진 것처럼 보인다. 제 폭대로 세우고 넘치는
+             만큼 옆으로 민다. 이 화면의 다른 알약 줄들도 같은 꼴이다. -->
+        <HorizontalScrollView android:id="@+id/chanScroll"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="10dp" android:scrollbars="none">
+            <LinearLayout android:id="@+id/chanRow"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
+
+        <!-- 1:1. 무전에서 제일 급한 신호라 화면을 덮듯이 크게 둔다 -
+             목록 한 줄로 두면 놓친다. -->
+        <LinearLayout android:id="@+id/callBox"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:visibility="gone"
+            android:layout_marginTop="12dp" android:padding="16dp"
+            android:background="@drawable/card">
+
+            <TextView android:id="@+id/callWho"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:textColor="@color/text" android:textSize="18sp"
+                android:textStyle="bold" android:text="" />
+
+            <!-- 1:1 중에 전체에서 오간 말. 곁으로 듣고 있어도 이야기하면서
+                 다 알아듣지는 못한다 - 글로 남겨 두면 끊고 나서 읽는다. -->
+            <TextView android:id="@+id/missed"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="10dp" android:visibility="gone"
+                android:textColor="@color/muted" android:textSize="13sp"
+                android:lineSpacingExtra="3dp"
+                android:padding="10dp" android:background="#2234e07a" />
+
+            <LinearLayout
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:layout_marginTop="8dp">
+                <Button android:id="@+id/callTake"
+                    android:layout_width="0dp" android:layout_weight="1"
+                    android:layout_height="wrap_content" android:text="받기" />
+                <Button android:id="@+id/callDrop"
+                    android:layout_width="0dp" android:layout_weight="1"
+                    android:layout_height="wrap_content" android:text="거절" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 현장 요청. 누름쇠 바로 위에 둔다 - 무전을 들고 있는 사람이
+             제일 자주 보는 자리다. -->
+        <LinearLayout android:id="@+id/askBox"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:layout_marginTop="10dp" />
+
+        <TextView android:id="@+id/rec"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginTop="10dp" android:visibility="gone"
+            android:text="● 녹음 중" android:textColor="#fca5a5"
+            android:textSize="13sp" android:textStyle="bold"
+            android:paddingStart="10dp" android:paddingEnd="10dp"
+            android:paddingTop="3dp" android:paddingBottom="3dp"
+            android:background="#33f87171" />
+
+        <!-- 지금 채널에 있는 사람들. 1:1 은 여기서 건다. -->
+        <TextView android:id="@+id/whoLabel"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="10dp" android:textColor="@color/muted"
+            android:textSize="12sp" android:text="" android:visibility="gone" />
+
+        <HorizontalScrollView
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:scrollbars="none">
+            <LinearLayout android:id="@+id/whoRow"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
+
+        <!-- 인터컴. **무전과 다른 층이다.**
+             무전은 누르는 동안만 한 사람이 말하고, 인터컴은 켜 둔 동안
+             여럿이 같이 말한다. 그래서 누름쇠 대신 스위치 둘을 둔다 -
+             여기서는 「말하기 켜짐」 이 곧 누름쇠다. -->
+        <LinearLayout android:id="@+id/icPane"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:layout_marginTop="12dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical">
+                <TextView android:id="@+id/icHead"
+                    android:layout_width="0dp" android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text" android:textSize="15sp"
+                    android:textStyle="bold" android:text="🎧 인터컴" />
+                <Button android:id="@+id/icOut" style="@style/Ptt.Button.Ghost"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="나가기" android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- 스위치 둘. **무전 누름쇠만 한 크기로 둔다** - 칩만 하게
+                 두면 눌러야 할 것으로 보이지 않고, 장갑 낀 손이나 흔들리는
+                 차 안에서는 겨냥하기도 어렵다. -->
+            <LinearLayout
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:layout_marginTop="10dp">
+                <TextView android:id="@+id/icTalk"
+                    android:layout_width="0dp" android:layout_weight="1"
+                    android:layout_height="104dp" android:gravity="center"
+                    android:text="말하기 꺼짐" android:textColor="@color/muted"
+                    android:textSize="18sp" android:textStyle="bold"
+                    android:background="@drawable/ic_key_off" />
+                <View android:layout_width="10dp" android:layout_height="1dp" />
+                <TextView android:id="@+id/icHear"
+                    android:layout_width="0dp" android:layout_weight="1"
+                    android:layout_height="104dp" android:gravity="center"
+                    android:text="듣기 켜짐" android:textColor="@color/text"
+                    android:textSize="18sp" android:textStyle="bold"
+                    android:background="@drawable/ic_key_on" />
+            </LinearLayout>
+
+            <!-- 같은 자리에 있는 분들. **램프가 곧 상태다** - 저 사람이
+                 듣고만 있는지, 말할 수 있는지가 보여야 같은 말을 두 번
+                 안 한다. -->
+            <HorizontalScrollView
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="10dp" android:scrollbars="none">
+                <LinearLayout android:id="@+id/icWhoRow"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:orientation="horizontal" />
+            </HorizontalScrollView>
+
+            <!-- 차 스피커로 들으실 때 우는 것을 끊는다. 켜면 상대가 말하는
+                 동안 내 마이크를 잠깐 닫는다 - 대신 동시에 말하지는 못한다. -->
+            <CheckBox android:id="@+id/icHalf"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:layout_marginTop="8dp" android:textColor="@color/muted"
+                android:textSize="13sp" android:text="한 번에 한 사람 (차 스피커에서 울 때)" />
+
+            <TextView android:id="@+id/icWhy"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="8dp" android:textColor="#fca5a5"
+                android:textSize="12sp" android:text="" android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- 누름쇠. 화면을 안 보고 누르는 자리라 크게 둔다. -->
+        <!-- 누름쇠. 화면을 안 보고 누르는 자리라 크게, 그리고 상태마다
+             테두리 색이 달라진다 - 어두운 연회장에서 글자보다 색이 먼저
+             읽힌다. -->
+        <!-- **막대는 누름쇠 안에 둔다.** 차에서 눈이 가는 자리가 거기다 -
+             설정을 펴야만 보이면 달리는 동안 「지금 걸릴 만큼 들어오고
+             있나」 를 알 길이 없다. -->
+        <FrameLayout
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="14dp">
+
+            <!-- **윗자리를 비워 두되, 꼭 그만큼만.** VOX 줄을 겹쳐 놓고
+                 글자를 통 한가운데에 두었더니 둘이 겹쳤다 - 겹쳐 놓은
+                 칸은 서로 비켜설 자리를 직접 적어 줘야 한다. 그래서
+                 54dp(VOX 줄 48dp + 그 위 6dp)를 비운다.
+
+                 **통은 꼭 끼게 둔다.** 처음에 146dp 로 넉넉히 잡았더니
+                 글자가 남는 자리 한가운데로 내려가, VOX 줄과 글자 사이가
+                 허전하게 벌어졌다.
+
+                 **글자는 한 줄, 그리고 막대와 띄운다.** 「한돌 님이 /
+                 말하는 중」 두 줄을 넣으려고 아래를 안 비웠더니, 글자
+                 아래끝이 바닥의 막대(아래서 14dp)에 붙었다. 한 줄로
+                 접고 아래도 24dp 비운다 - 그러면 글자는 VOX 줄과 막대
+                 사이 한가운데에 앉고, 막대와는 한 뼘쯤 떨어진다.
+                 이름이 길면 줄을 넘기지 않고 글자를 줄인다(14~22sp). -->
+            <TextView android:id="@+id/key"
+                android:layout_width="match_parent" android:layout_height="124dp"
+                android:gravity="center"
+                android:paddingTop="54dp" android:paddingBottom="24dp"
+                android:paddingStart="16dp" android:paddingEnd="16dp"
+                android:text="눌러서 말하기" android:textColor="@color/text"
+                android:textStyle="bold"
+                android:maxLines="1" android:ellipsize="end"
+                android:autoSizeTextType="uniform"
+                android:autoSizeMinTextSize="14sp" android:autoSizeMaxTextSize="22sp"
+                android:autoSizeStepGranularity="1sp"
+                android:background="@drawable/key_idle" />
+
+            <!-- VOX. 누르지 않아도 말을 시작하면 나간다.
+
+                 **누름쇠 안이다.** 말하는 일에 딸린 손잡이는 말하는
+                 자리에 있어야 한다 - 한동안 누름쇠 한참 아래 소리·UDP
+                 손잡이들 틈에 끼어 있었고, 거기서는 찾는 사람만 찾았다.
+                 화면(웹)도 같은 자리다.
+
+                 **두 번 눌리지 않는다.** 겹쳐 놓은 칸이라 안드로이드가
+                 위엣것부터 물어보는데, 체크와 ± 는 제가 받아 삼키고
+                 나머지 빈 자리는 밑의 누름쇠로 그냥 내려간다 - 그래서
+                 VOX 를 누른 손가락이 송신까지 켜는 일이 없다.
+
+                 켜 둔 것은 적어 두지 않는다 - 다음에 켜진 줄 모르는
+                 채로 열리면 차 안에서 한 말이 그대로 나간다. -->
+            <!-- **높이를 못박는다.** `wrap_content` 로 두면 체크상자가
+                 기기마다 제 키를 가져가는데, 그러면 아래 글자가 비워
+                 둔 56dp 를 넘겨 다시 겹친다. 48dp 는 손가락 하나의
+                 표준 크기이기도 하다. -->
+            <LinearLayout
+                android:layout_width="wrap_content" android:layout_height="48dp"
+                android:layout_gravity="top|center_horizontal"
+                android:orientation="horizontal" android:gravity="center_vertical"
+                android:layout_marginTop="6dp">
+
+                <CheckBox android:id="@+id/vox"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="VOX" android:textColor="@color/text"
+                    android:textSize="14sp" />
+
+                <!-- **감도는 켰을 때만 뜬다.** 꺼 둔 동안에는 쓸 데가 없는
+                     숫자인데, 누름쇠 안이라 한 칸이 그대로 글자 자리를
+                     먹는다. 화면(웹)도 같은 규칙이다.
+
+                     달리면서는 막대를 못 끈다. 누르는 자리 둘이면 눈을
+                     떼고도 맞춘다. -->
+                <LinearLayout android:id="@+id/voxSensRow"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:gravity="center_vertical"
+                    android:visibility="gone">
+
+                    <TextView android:id="@+id/voxDown"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="−" android:textSize="17sp"
+                        android:textColor="@color/text" android:background="@drawable/chip"
+                        android:clickable="true" android:focusable="true"
+                        android:gravity="center" android:minWidth="46dp"
+                        android:paddingTop="6dp" android:paddingBottom="6dp"
+                        android:layout_marginStart="4dp" />
+                    <TextView android:id="@+id/voxSens"
+                        android:layout_width="26dp" android:layout_height="wrap_content"
+                        android:gravity="center" android:text="4"
+                        android:textColor="@color/text" android:textSize="15sp" />
+                    <TextView android:id="@+id/voxUp"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="+" android:textSize="17sp"
+                        android:textColor="@color/text" android:background="@drawable/chip"
+                        android:clickable="true" android:focusable="true"
+                        android:gravity="center" android:minWidth="46dp"
+                        android:paddingTop="6dp" android:paddingBottom="6dp"
+                        android:layout_marginEnd="4dp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- 가운데 금이 문턱이다. 말할 때 그 금을 넘으면 잡힌다. -->
+            <ProgressBar android:id="@+id/keyLvl"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent" android:layout_height="5dp"
+                android:layout_gravity="bottom"
+                android:layout_marginStart="36dp" android:layout_marginEnd="36dp"
+                android:layout_marginBottom="14dp"
+                android:max="100" android:progress="0" />
+        </FrameLayout>
+
+        <TextView android:id="@+id/diag"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" android:gravity="center"
+            android:textColor="@color/muted" android:textSize="11sp"
+            android:fontFamily="monospace" android:text="" />
+
+        <TextView android:id="@+id/hint"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="10dp" android:gravity="center"
+            android:textColor="@color/muted" android:textSize="12sp"
+            android:text="볼륨 내림 키로도 말할 수 있습니다" />
+
+        <!-- **「운전 중에 쓰라」 고 읽히면 안 된다.**
+             화면을 안 보고 눌린다는 말이 곧 운전하면서 쓰라는 안내로
+             읽힌다 - 법이 금지한 것을 우리가 권하는 꼴이 된다. -->
+        <TextView android:id="@+id/driveWarn"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="⚠ 운전 중에는 운전자가 조작하지 마십시오 — 동승자가 쓰시거나 세운 뒤에 쓰십시오"
+            android:textColor="@color/muted" android:textSize="12sp"
+            android:gravity="center" android:paddingTop="6dp"
+            android:paddingStart="12dp" android:paddingEnd="12dp" />
+
+        <!-- 소리 손잡이.
+             볼륨 내림 키를 송신 키로 뺏었으니 폰 옆 단추로는 키우기만 되고
+             줄일 수가 없다. 뺏은 만큼 앱 안에 돌려준다. -->
+        <LinearLayout
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:gravity="center_vertical"
+            android:layout_marginTop="12dp">
+
+            <!-- 평소엔 알약 하나. 손잡이를 늘 펴 두면 주머니에서, 또
+                 누름쇠를 잡다가 손등으로 스친다 - 그러면 소리가 꺼진
+                 줄도 모르고 무전을 못 듣는다. -->
+            <TextView android:id="@+id/volLabel"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="🔊 소리" android:textColor="@color/muted"
+                android:textSize="13sp" android:background="@drawable/chip"
+                android:paddingStart="14dp" android:paddingEnd="14dp"
+                android:paddingTop="8dp" android:paddingBottom="8dp" />
+
+            <SeekBar android:id="@+id/vol"
+                android:layout_width="0dp" android:layout_weight="1"
+                android:layout_height="wrap_content" android:visibility="gone"
+                android:max="100" android:progress="70"
+                android:paddingStart="14dp" android:paddingEnd="8dp" />
+        </LinearLayout>
+
+        <!-- 차 음악을 내리고, 때가 되면 돌려준다.
+
+             브라우저는 「미디어를 트는 척」 해서 차가 비켜 주기를 기다려야
+             했지만, 앱에는 제대로 달라고 말하는 길이 있다(오디오 포커스).
+             언제 돌려줄지는 사람이 고른다 - 한 마디마다 돌려주면 음악이
+             깜빡이고, 안 돌려주면 켠 내내 작다. -->
+        <LinearLayout
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:gravity="center_vertical"
+            android:layout_marginTop="10dp">
+
+            <CheckBox android:id="@+id/udp"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="UDP" android:textColor="@color/text"
+                android:textSize="14sp" android:layout_marginEnd="10dp" />
+
+            <CheckBox android:id="@+id/duck"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="음악 내림" android:textColor="@color/text"
+                android:textSize="14sp" />
+
+            <Spinner android:id="@+id/duckHold"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+        <!-- 수신 크기. 볼륨은 음악과 같이 쓰므로, 음악에 맞춘 볼륨에서 무전이
+             작으면 여기서 비율을 맞춘다(웹·차와 같은 1~5 칸). -->
+        <LinearLayout
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:gravity="center_vertical"
+            android:layout_marginTop="10dp">
+
+            <TextView
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="수신 크기" android:textColor="@color/text"
+                android:textSize="14sp" android:layout_marginEnd="8dp" />
+            <TextView android:id="@+id/rxDown"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="−" android:textSize="17sp"
+                android:textColor="@color/text" android:background="@drawable/chip"
+                android:clickable="true" android:focusable="true"
+                android:gravity="center" android:minWidth="46dp"
+                android:paddingTop="6dp" android:paddingBottom="6dp" />
+            <TextView android:id="@+id/rxVol"
+                android:layout_width="26dp" android:layout_height="wrap_content"
+                android:gravity="center" android:text="1"
+                android:textColor="@color/text" android:textSize="15sp" />
+            <TextView android:id="@+id/rxUp"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="+" android:textSize="17sp"
+                android:textColor="@color/text" android:background="@drawable/chip"
+                android:clickable="true" android:focusable="true"
+                android:gravity="center" android:minWidth="46dp"
+                android:paddingTop="6dp" android:paddingBottom="6dp" />
+        </LinearLayout>
+
+        <!-- 기록. 한 줄로 다 쏟아 두면 정작 찾는 것이 안 보인다 -
+             무엇을 보고 싶은지 알약으로 고른다. -->
+        <LinearLayout
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:gravity="center_vertical"
+            android:layout_marginTop="18dp">
+
+            <TextView
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="기록" android:textColor="@color/text"
+                android:textSize="15sp" android:textStyle="bold"
+                android:layout_marginEnd="12dp" />
+
+            <HorizontalScrollView
+                android:layout_width="0dp" android:layout_weight="1"
+                android:layout_height="wrap_content" android:scrollbars="none">
+                <LinearLayout android:id="@+id/logTabs"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:orientation="horizontal" />
+            </HorizontalScrollView>
+        </LinearLayout>
+
+        <TextView android:id="@+id/log"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="6dp" android:textColor="@color/muted"
+            android:textSize="12sp" android:fontFamily="monospace" />
+
+        </LinearLayout><!-- herePane -->
+
+        <!-- 일하는 화면의 발행처는 **맨 아래**다. 누름쇠 둘레는 비워 둔다 -
+             화면을 안 보고 누르는 자리라 곁에 뭘 두면 잘못 눌린다. -->
+        <ImageView android:id="@+id/markWork"
+            android:layout_width="match_parent" android:layout_height="22dp"
+            android:scaleType="fitCenter"
+            android:layout_marginTop="26dp"
+            android:src="@drawable/onsupporter"
+            android:alpha="0.4"
+            android:importantForAccessibility="no" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

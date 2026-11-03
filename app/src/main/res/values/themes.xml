@@ -1,0 +1,106 @@
+<resources>
+    <!--
+      온서포터 무전 차림새.
+
+      바탕은 흑연빛 금속, 켜진 것·누르는 것은 녹색 LED 다(2026-10-31,
+      네이비·금색에서 바꿨다 - 무전기 앞판과 한 집안으로). 전에는 재료 기본값(보라)이 그대로 나와서, 같은 행사에 쓰는
+      물건인데 폰만 다른 프로그램처럼 보였다.
+
+      **어두운 자리에서 쓰는 화면이다.** 연회장 조명은 대개 꺼져 있고,
+      Staff는 화면을 힐끗 보고 만다. 그래서 대비를 세게 둔다.
+    -->
+    <style name="Theme.Ptt" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:statusBarColor">@color/bg</item>
+        <item name="android:navigationBarColor">@color/bg</item>
+        <item name="android:windowLightStatusBar">false</item>
+
+        <item name="colorPrimary">@color/gold</item>
+        <item name="colorOnPrimary">@color/led_text</item>
+        <item name="colorPrimaryContainer">@color/led_glass</item>
+        <item name="colorOnPrimaryContainer">@color/led_text</item>
+
+        <item name="colorSurface">@color/card</item>
+        <item name="colorOnSurface">@color/text</item>
+        <item name="colorSurfaceVariant">@color/card</item>
+        <item name="colorOnSurfaceVariant">@color/muted</item>
+        <item name="colorOutline">@color/line</item>
+        <item name="android:colorBackground">@color/bg</item>
+
+        <item name="colorError">#f87171</item>
+        <item name="android:textColorHighlight">#5534e07a</item>
+
+        <item name="materialButtonStyle">@style/Ptt.Button</item>
+        <item name="android:editTextStyle">@style/Ptt.Edit</item>
+        <!-- 팝업·알림도 리벳 박은 금속판으로. -->
+        <item name="alertDialogTheme">@style/Ptt.Dialog</item>
+        <item name="materialAlertDialogTheme">@style/Ptt.Dialog</item>
+    </style>
+
+    <style name="Ptt.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="android:windowBackground">@drawable/dialog_plate</item>
+        <item name="backgroundTint">@null</item>
+        <item name="colorPrimary">@color/gold</item>
+        <item name="colorOnSurface">@color/text</item>
+        <item name="android:textColorPrimary">@color/text</item>
+        <item name="android:textColor">@color/text</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Ptt.DialogButton</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Ptt.DialogButton</item>
+        <item name="buttonBarNeutralButtonStyle">@style/Ptt.DialogButton</item>
+    </style>
+    <!-- 팝업 단추는 글자 단추(LED 녹색 글) - 판 안에 판을 또 세우지 않는다. -->
+    <style name="Ptt.DialogButton" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/gold</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- 장갑 낀 손으로도 눌린다. 행사장에서 정장 소매를 걷고 누르는 자리다. -->
+    <style name="Ptt.Button" parent="Widget.Material3.Button">
+        <!-- 녹색 LED 유리(btn_led). 칠(tint)을 걷어야 모양 파일이 먹는다. -->
+        <item name="android:background">@drawable/btn_led</item>
+        <item name="backgroundTint">@null</item>
+        <item name="android:textColor">@color/led_text</item>
+        <item name="android:minHeight">52dp</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="cornerRadius">14dp</item>
+    </style>
+
+    <!-- 곁다리 단추. 무전을 끄거나 배터리 설정처럼 자주 안 누르는 것. -->
+    <style name="Ptt.Button.Ghost" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:minHeight">48dp</item>
+        <item name="android:textSize">15sp</item>
+        <item name="cornerRadius">14dp</item>
+        <item name="android:textColor">@color/muted</item>
+        <item name="strokeColor">@color/line</item>
+    </style>
+
+    <!-- 알약. 채널과 사람처럼 「고르는 것」 은 누르는 단추와 다른 꼴이어야
+         한다 - 네모난 단추를 나란히 두면 어느 것이 지금 자리인지 안 읽힌다. -->
+    <style name="Ptt.Chip" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:minHeight">38dp</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="cornerRadius">999dp</item>
+        <item name="android:textColor">@color/muted</item>
+        <item name="strokeColor">@color/line</item>
+    </style>
+
+    <!-- 지금 있는 자리. 알약 하나만 금색으로 선다. -->
+    <style name="Ptt.Chip.On" parent="Ptt.Chip">
+        <item name="android:textColor">@color/gold</item>
+        <item name="strokeColor">@color/gold</item>
+    </style>
+
+    <style name="Ptt.Edit" parent="Widget.AppCompat.EditText">
+        <item name="android:background">@drawable/field</item>
+        <item name="android:padding">14dp</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/text</item>
+        <item name="android:textColorHint">@color/muted</item>
+    </style>
+</resources>

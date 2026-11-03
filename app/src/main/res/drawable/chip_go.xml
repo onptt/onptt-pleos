@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 맡는 알약. **끝내는 알약(금색)과 확 달라야 한다** - 한 줄에 나란히
+     서는 둘이라, 색이 비슷하면 손이 가는 대로 눌린다. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#1a38bdf8" />
+    <stroke android:width="2dp" android:color="#38bdf8" />
+    <corners android:radius="999dp" />
+</shape>

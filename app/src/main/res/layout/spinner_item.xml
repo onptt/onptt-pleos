@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 고르는 칸의 글자. 시스템 기본은 밝은 테마를 보고 만든 색이라
+     이 화면에서는 흐려서 안 읽힌다 - 우리 색으로 못박는다. -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:textColor="@color/text" android:textSize="14sp"
+    android:paddingTop="10dp" android:paddingBottom="10dp"
+    android:paddingStart="6dp" android:paddingEnd="6dp" />

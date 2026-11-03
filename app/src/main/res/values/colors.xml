@@ -1,0 +1,23 @@
+<resources>
+    <!-- 실버 메탈릭 + 녹색 LED(2026-10-31). 네이비·금색을 걷고 무전기
+         앞판(Hw.kt)과 한 집안으로 맞춘다. 웹 무전 화면(.ptt-page)과 같은 값.
+         이름은 그대로 둔다 - gold 는 이제 「켜진 것」 의 LED 녹색이다. -->
+    <color name="bg">#121417</color>
+    <color name="card">#1c1f23</color>
+    <color name="line">#3b4148</color>
+    <color name="text">#e9edf0</color>
+    <color name="muted">#9aa3ab</color>
+    <color name="gold">#34e07a</color>
+    <color name="green">#34e07a</color>
+    <color name="amber">#f59e0b</color>
+    <!-- 맡는 알약. 끝내는 녹색과 확 달라야 한다. -->
+    <color name="sky">#38bdf8</color>
+    <color name="metal_hi">#555b62</color>
+    <color name="metal_lo">#24282d</color>
+    <color name="led_glass">#13301f</color>
+    <color name="led_text">#c8ffd9</color>
+    <!-- 로그인 전(문간)은 노란색 그대로 - 들어간 뒤 무전 화면만 녹색 LED. -->
+    <color name="door_gold">#fbbf24</color>
+    <color name="door_glass">#2d2306</color>
+    <color name="door_text">#ffe7a3</color>
+</resources>

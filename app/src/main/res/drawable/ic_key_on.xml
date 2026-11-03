@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 인터컴 스위치 — 켜진 것. 무전 누름쇠와 다른 색으로 둔다. 둘을 같이
+     쓰는 자리라, 같은 색이면 지금 무엇이 켜져 있는지 알 수 없다. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#1438bdf8" />
+    <stroke android:width="2dp" android:color="#38bdf8" />
+    <corners android:radius="20dp" />
+</shape>
