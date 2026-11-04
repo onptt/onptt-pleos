@@ -1041,6 +1041,23 @@ object Radio {
     /** **사고 감지를 보낸다**(차 갈래의 Pleos.kt - 에어백 전개). 내 자리를 알면 같이. */
     fun sos() { link?.sos(svc?.spot) }
 
+    /**
+     * **지금 읽어 주는 음성 안내**(차 Pleos.say · 폰 Ear.say). 표시창이 「🔊 음성 안내」 로 바뀌고 아랫줄에
+     * 같은 글을 띄운다 - 무전 소리와 안내 소리가 귀로는 안 갈린다(주행 가능 거리 부족 같은 알림이
+     * 누가 무전한 것인지 헷갈렸다). 읽는 데 걸릴 만큼(글자당 0.17초 + 1.5초) 띄우고 거둔다.
+     */
+    @Volatile var notice = ""; private set
+    private var noticeEnd = 0L
+    fun announce(text: String) {
+        if (text.isBlank()) return
+        val ms = (text.length * 170L + 1_500L).coerceIn(2_500L, 12_000L)
+        notice = text; noticeEnd = System.currentTimeMillis() + ms
+        changed()
+        hand.postDelayed({
+            if (System.currentTimeMillis() >= noticeEnd - 50) { notice = ""; changed() }
+        }, ms)
+    }
+
     /** 시험 입력(디버그) - 마이크 자리에 이 소리 파일(48kHz 16비트 모노 PCM)을 넣는다. Mic.fake 참고. */
     fun fakeMic(f: java.io.File) { mic?.fake = try { java.io.BufferedInputStream(f.inputStream()) } catch (t: Throwable) { null } }
 

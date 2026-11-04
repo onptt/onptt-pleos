@@ -50,6 +50,11 @@ object LcdFeed {
                 lcd.tone = Lcd.Tone.RX; lcd.big = Radio.aside; lcd.small = toAll(Radio.aside)
                 mode = PttKey.Mode.RX
             }
+            // 음성 안내를 읽는 동안 - 무전이 아니라 차가 읽어 주는 말이라는 것을 보이고, 같은 글을 아랫줄에.
+            Radio.notice.isNotBlank() -> {
+                lcd.tone = Lcd.Tone.COOL; lcd.big = "🔊 음성 안내"; lcd.small = Radio.notice
+                mode = PttKey.Mode.IDLE
+            }
             else -> {
                 lcd.tone = Lcd.Tone.COOL; lcd.big = "STAND BY"
                 lcd.small = if (Radio.inEcho) "🔁 말을 마치면 0.5초 뒤 그대로 다시 들려 드립니다" else ""

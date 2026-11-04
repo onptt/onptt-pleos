@@ -510,9 +510,23 @@ class Lcd(ctx: Context) : View(ctx) {
         }
         // ── Z4 상태 줄 ──
         if (small.isNotBlank()) {
-            ink.textSize = s(L.SMALL); ink.typeface = Typeface.DEFAULT_BOLD
+            // 길면 줄이고(0.8배까지), 그래도 넘치면 띄어쓰기에서 두 줄로 - 위 줄은 큰 글자 칸 아래에 붙인다.
+            // 음성 안내 글(주행 가능 거리 부족 등)이 한 줄로 그리면 양옆으로 넘쳤다.
+            var size = s(L.SMALL)
+            ink.typeface = Typeface.DEFAULT_BOLD; ink.textSize = size
+            while (ink.measureText(small) > zSmall.width() && size > s(L.SMALL) * 0.8f) { size -= s(0.5f); ink.textSize = size }
             ink.alpha = 230
-            cv.drawText(small, zSmall.centerX() - ink.measureText(small) / 2f, base(zSmall, s(L.SMALL)), ink)
+            if (ink.measureText(small) <= zSmall.width()) {
+                cv.drawText(small, zSmall.centerX() - ink.measureText(small) / 2f, base(zSmall, size), ink)
+            } else {
+                val mid = small.length / 2
+                val cut = (0 until small.length).filter { small[it] == ' ' }.minByOrNull { kotlin.math.abs(it - mid) } ?: mid
+                val a = small.substring(0, cut).trim(); val b = small.substring(cut).trim()
+                val lh = size * 1.25f
+                tmp.set(zSmall.left, zSmall.top - lh, zSmall.right, zSmall.bottom - lh)
+                cv.drawText(a, zSmall.centerX() - ink.measureText(a) / 2f, base(tmp, size), ink)
+                cv.drawText(b, zSmall.centerX() - ink.measureText(b) / 2f, base(zSmall, size), ink)
+            }
             ink.alpha = 255
         }
         // ── Z5 소리 띠 - 대기에는 흐린 가운데 금, 송수신 중 파형 ──

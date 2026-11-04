@@ -71,13 +71,14 @@ object Ear {
     /** 한 일을 말로 돌려준다 - 화면을 안 보고 했으니 귀로 확인한다. */
     fun say(ctx: Context, text: String) {
         val t = tts
-        if (t != null && ttsUp) { t.speak(text, TextToSpeech.QUEUE_FLUSH, null, "ptt-cmd"); return }
+        if (t != null && ttsUp) { t.speak(text, TextToSpeech.QUEUE_FLUSH, null, "ptt-cmd"); Radio.announce(text); return }
         if (t != null) return   // 아직 켜지는 중 - 이번 말은 넘긴다
         tts = TextToSpeech(ctx.applicationContext) { st ->
             ttsUp = st == TextToSpeech.SUCCESS
             if (ttsUp) {
                 tts?.language = Locale.KOREAN
                 tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "ptt-cmd")
+                Radio.announce(text)
             }
         }
     }

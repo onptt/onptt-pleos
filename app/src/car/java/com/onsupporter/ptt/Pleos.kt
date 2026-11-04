@@ -338,7 +338,7 @@ object Pleos {
             main.postDelayed({ say(text, tries + 1) }, 500L)
             return
         }
-        try { t.speak(text, true) } catch (e: Throwable) { log("읽지 못했습니다 (${e.javaClass.simpleName})") }
+        try { t.speak(text, true); Radio.announce(text) } catch (e: Throwable) { log("읽지 못했습니다 (${e.javaClass.simpleName})") }
     }
 
     /** 붙는다. 권한이 방금 났을 수 있으므로 여러 번 불러도 된다 - 이미 붙은 쪽은 건너뛴다. */
