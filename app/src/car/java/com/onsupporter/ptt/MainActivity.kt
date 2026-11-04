@@ -86,7 +86,8 @@ class MainActivity : Activity() {
     private lateinit var sensText: TextView
     private lateinit var rxText: TextView
     private lateinit var sheetDuck: HwKey
-    private lateinit var sheetUdp: HwKey
+    // 음성 전송 방식 - UDP(true) / 웹소켓(false) 좌우 고르기.
+    private val udpKeys = mutableListOf<Pair<Boolean, HwKey>>()
     private lateinit var sheetVoice: HwKey
     private val holdKeys = mutableListOf<Pair<Long, HwKey>>()
     private lateinit var logText: TextView
@@ -278,6 +279,8 @@ class MainActivity : Activity() {
         if (i?.getStringExtra("sos") != null) Pleos.sos()
         // `--es heard "1번 채널"` - 받아쓴 말이 들어온 것처럼(에뮬레이터 마이크로 말할 수 없을 때).
         i?.getStringExtra("heard")?.let { heard(it) }
+        // `--es nick 그랜저` - 이름 칸을 채운다(adb 로는 한글을 칠 수 없다. 시연 영상 찍기).
+        i?.getStringExtra("nick")?.let { if (::nickBox.isInitialized) nickBox.setText(it) }
     }
 
     /** **같은 채널 사람의 사고 감지.** 자리를 알고 내비에 붙었으면 바로 그 자리로 안내를 건다. */
@@ -1251,8 +1254,7 @@ class MainActivity : Activity() {
         rxText.text = Radio.rxVol.toString()
         sheetDuck.on = Duck.on
         sheetDuck.text = if (Duck.on) "켜짐" else "꺼짐"
-        sheetUdp.on = Radio.udp
-        sheetUdp.text = if (Radio.udp) "켜짐" else "꺼짐"
+        udpKeys.forEach { (v, k) -> k.on = v == Radio.udp }
         sheetVoice.on = Pleos.voiceOn
         sheetVoice.text = if (Pleos.voiceOn) "켜짐" else "꺼짐"
         val hold = prefs.getLong("duckHold", 5_000)
@@ -1997,14 +1999,58 @@ class MainActivity : Activity() {
                 drawSheet()
             }
         }
-        sheetUdp = HwKey(this).apply {
-            text = "켜짐"; led = col(0xFF35CFFF)
-            onTap = {
-                Radio.udpOn(!Radio.udp)
-                prefs.edit().putBoolean("udp", Radio.udp).apply()
-                draw()
+        // **음성 전송 방식.** 「UDP 로 나르기 켜짐/꺼짐」 으로 두었더니 꺼짐이 무엇으로
+        // 가는지가 안 읽혔다 - 두 길을 이름으로 나란히 세워 고르게 한다. 폰 앱·웹과 같은 이름·글.
+        udpKeys.clear()
+        val udpRow = hrow()
+        listOf(true to "UDP", false to "웹소켓").forEachIndexed { i, (v, name) ->
+            val k = HwKey(this).apply {
+                text = name; led = col(0xFF35CFFF)
+                onTap = {
+                    if (Radio.udp != v) {
+                        Radio.udpOn(v)
+                        prefs.edit().putBoolean("udp", v).apply()
+                    }
+                    draw()
+                }
             }
+            udpKeys += v to k
+            udpRow.addView(k, LinearLayout.LayoutParams(dpi(150f), keyH).apply {
+                if (i > 0) marginStart = dpi(12f)
+            })
         }
+        // i - 누르면 바로 아래에 두 길의 차이를 펴고, 다시 누르면 접는다.
+        val udpWhy = TextView(this).apply {
+            text = Codec.SEND_WHY
+            setTextColor(col(0xFFB8C2CE))
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+            setLineSpacing(0f, 1.3f)
+            setPadding(dpi(20f), dpi(14f), dpi(20f), dpi(14f))
+            background = GradientDrawable().apply {
+                cornerRadius = dp(14f); setColor(col(0xFF07090B))
+                setStroke(dpi(1f), col(0x6635CFFF))
+            }
+            visibility = View.GONE
+        }
+        udpRow.addView(TextView(this).apply {
+            text = "i"; gravity = Gravity.CENTER
+            setTextColor(col(0xFFE8EEFC))
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
+            typeface = Typeface.create(Typeface.SERIF, Typeface.BOLD)
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.OVAL; setColor(col(0xFF1A1E24))
+                setStroke(dpi(2f), col(0xFF50565D))
+            }
+            isClickable = true
+            setOnClickListener {
+                // 판은 화면 높이에 꼭 맞게 짜여 있다 - 설명을 펴는 동안에는 진단 기록을
+                // 석 줄로 줄여 그 자리를 내 준다(안 그러면 「무전 끄기·닫기」 가 잘린다).
+                val show = udpWhy.visibility != View.VISIBLE
+                udpWhy.visibility = if (show) View.VISIBLE else View.GONE
+                logText.minLines = if (show) 3 else 4
+                logText.maxLines = if (show) 3 else Int.MAX_VALUE
+            }
+        }, LinearLayout.LayoutParams(dpi(52f), dpi(52f)).apply { marginStart = dpi(20f) })
 
         // 언제 음악을 돌려줄까. 마이크도 같은 시계를 쓴다 - 음악은
         // 돌아왔는데 마이크를 쥐고 있으면 차가 도로 내린다.
@@ -2079,9 +2125,10 @@ class MainActivity : Activity() {
             addView(line("음성 안내", hrow().apply {
                 addView(sheetVoice, LinearLayout.LayoutParams(dpi(170f), keyH))
             }))
-            addView(line("UDP 로 나르기", hrow().apply {
-                addView(sheetUdp, LinearLayout.LayoutParams(dpi(170f), keyH))
-            }))
+            addView(line("음성 전송 방식", udpRow))
+            addView(udpWhy, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
+                bottomMargin = dpi(8f)
+            })
             addView(line("지도 색", shadeRow))
             addView(engraved("진단 기록", 18f, col(0xFF8B95A3)).apply {
                 setPadding(dpi(4f), dpi(18f), 0, dpi(8f))

@@ -2597,11 +2597,25 @@ class MainActivity : AppCompatActivity() {
             cells += cell(1f, where)
         }
         add(sec, hrow(*cells.toTypedArray()))
+        // **음성 전송 방식.** 「UDP」 칸 하나로 두었더니 끄면 무엇으로 가는지가 안 읽혔다 -
+        // 두 길을 이름으로 나란히 세워 고르게 한다. 차 앱·웹과 같은 이름·글(Codec.SEND_WHY).
+        val sendKeys = listOf(true to "UDP", false to "웹소켓").map { (on, name) ->
+            on to valKey(name) {}
+        }
+        fun paintSend() = sendKeys.forEach { (on, k) ->
+            val pick = on == v.udp.isChecked
+            k.setTextColor(col(if (pick) 0xFF35CFFF else 0xFF7A838D))
+        }
+        paintSend()
+        val sendBox = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            sendKeys.forEachIndexed { i, (on, k) ->
+                k.setOnClickListener { v.udp.isChecked = on; paintSend() }
+                addView(k, LinearLayout.LayoutParams(dpx(96f), dpx(42f)).apply { if (i > 0) marginStart = dpx(6f) })
+            }
+        }
+        add(sec, hrow(label("음성 전송 방식"), hintDot(Codec.SEND_WHY), fill(), sendBox), 14f)
         add(sec, hrow(
-            cell(1f, check("UDP", v.udp.isChecked) { v.udp.isChecked = it },
-                 hintDot("소리를 UDP 로 나릅니다. 늦은 조각은 버리고 가므로 망이 출렁여도 덜 끊깁니다 — " +
-                         "꺼 두면 전처럼 웹소켓으로 가는데, 그쪽은 한 조각이 늦으면 뒤엣것이 전부 밀립니다. " +
-                         "못 붙는 기기에서는 알아서 웹소켓으로 돌아갑니다.")),
             cell(1f, check("에코 제거", Radio.aec) { yes ->
                 Radio.aec = yes
                 getSharedPreferences("ptt", Context.MODE_PRIVATE).edit().putBoolean("aec", yes).apply()
