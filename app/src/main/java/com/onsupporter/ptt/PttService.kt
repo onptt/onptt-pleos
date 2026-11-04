@@ -669,7 +669,8 @@ object Radio {
         if (voxTalking) {
             if (loud) voxQuiet = 0
             else if (voxQuiet == 0L) voxQuiet = now
-            val tooLong = voxSince > 0 && now - voxSince > 20_000
+            // 웹 VOX_HOLD 와 같은 30초 - 차에서 길이나 상황을 설명하면 20초는 쉽게 넘긴다.
+            val tooLong = voxSince > 0 && now - voxSince > 30_000
             if (tooLong || (voxQuiet > 0 && now - voxQuiet > 800)) {
                 voxTalking = false; voxSince = 0; voxQuiet = 0
                 hand.post { release() }

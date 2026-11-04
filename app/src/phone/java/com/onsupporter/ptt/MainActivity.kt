@@ -187,7 +187,7 @@ private fun wireDuckVox(v: ActivityMainBinding, prefs: android.content.SharedPre
                 "· 쓰기 전에 동승자와 함께 감도(VOX −/+)를 맞추세요 - " +
                 "주행 소음이 말로 읽히면 채널을 혼자 물게 됩니다\n" +
                 "· 동승자 대화도 그대로 나갑니다\n" +
-                "· 20초를 넘기면 저절로 끊깁니다\n" +
+                "· 30초를 넘기면 저절로 끊깁니다\n" +
                 "· 누름쇠를 누르면 언제든 그쪽이 이깁니다")
             .setPositiveButton("알겠습니다, 켭니다") { _, _ ->
                 Radio.voxOn(true)
