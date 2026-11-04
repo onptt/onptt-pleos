@@ -279,6 +279,8 @@ class MainActivity : Activity() {
         if (i?.getStringExtra("sos") != null) Pleos.sos()
         // `--es heard "1번 채널"` - 받아쓴 말이 들어온 것처럼(에뮬레이터 마이크로 말할 수 없을 때).
         i?.getStringExtra("heard")?.let { heard(it) }
+        // `--es mic vox.pcm` - 앱 files 의 그 소리를 마이크 입력으로 넣는다(에뮬레이터 마이크가 무음일 때 VOX 시연).
+        i?.getStringExtra("mic")?.let { Radio.fakeMic(java.io.File(filesDir, it)) }
         // `--es nick 그랜저` - 이름 칸을 채운다(adb 로는 한글을 칠 수 없다. 시연 영상 찍기).
         i?.getStringExtra("nick")?.let { if (::nickBox.isInitialized) nickBox.setText(it) }
     }
@@ -339,11 +341,41 @@ class MainActivity : Activity() {
         }
     }
 
-    /** 공개방 같은 채널의 한 분을 개인방(지난번에 들어갔던 방)으로 부른다. */
-    private fun inviteTo(id: Int, name: String) {
+    /**
+     * **부를 분들(공개방).** 한 분씩 부르고 나면 나도 개인방으로 가야 하는데, 가는 순간 공개방의
+     * 「부르기」 가 사라져 다음 분을 못 부른다. 그래서 먼저 고르고(☑) 한 번에 부른 뒤 같이 간다.
+     */
+    private val invitePick = linkedMapOf<Int, String>()
+
+    private fun toggleInvite(id: Int, name: String) {
+        if (prefs.getString("onpttRoomCode", "").orEmpty().length != 6) {
+            toast("부를 개인방이 없습니다 — 먼저 개인방에 한 번 들어가 보세요"); return
+        }
+        if (invitePick.remove(id) == null) invitePick[id] = name
+        drawRoster(); if (pickPane.visibility == View.VISIBLE) drawPicker()
+    }
+
+    /** 고른 분들을 한 번에 부르고, 나도 그 개인방으로 들어간다. */
+    private fun inviteGo() {
         val code = prefs.getString("onpttRoomCode", "").orEmpty()
-        if (code.length != 6) { toast("부를 개인방이 없습니다 — 먼저 개인방에 한 번 들어가 보세요"); return }
-        Radio.invite(id, code) { said -> runOnUiThread { toast(said) } }
+        val list = invitePick.toList(); invitePick.clear()
+        if (code.length != 6 || list.isEmpty()) { drawRoster(); return }
+        toast("${list.size}명을 개인방으로 부릅니다…")
+        val said = java.util.Collections.synchronizedList(mutableListOf<String>())
+        val left = java.util.concurrent.atomic.AtomicInteger(list.size)
+        list.forEach { (id, _) ->
+            Radio.invite(id, code) { line ->
+                said += line
+                if (left.decrementAndGet() == 0) runOnUiThread {
+                    note(said.joinToString(" · "))
+                    Pleos.say("${list.size}명을 불렀습니다. 개인방으로 들어갑니다")
+                    privateRoom = true
+                    roomBox.setText(code)
+                    prefs.edit().putBoolean("onpttRoom", true).putString("onpttRoomCode", code).apply()
+                    go()
+                }
+            }
+        }
     }
 
     override fun onRequestPermissionsResult(code: Int, perms: Array<out String>, got: IntArray) {
@@ -683,7 +715,7 @@ class MainActivity : Activity() {
                 sameTo?.let { d -> { sameDest(d, p.name) } },
                 // **공개방 내 줄 - 목적지를 이 채널에 보일지 바로 고른다**(설정 판까지 안 간다).
                 // 남의 줄 - 공개방에서 내가 아는 개인방이 있으면 그리로 부른다.
-                if (isMe) myShare() else invitePill(p.id, p.name)))
+                if (isMe) myAct() else invitePill(p.id, p.name)))
         }
     }
 
@@ -2249,7 +2281,7 @@ class MainActivity : Activity() {
         val myGo = Pleos.myDest?.let { Where.destText(it) + if (Pleos.shareHere) "" else " · 나만 봄" } ?: ""
         pickList.addView(personRow("나", "내 자리 위주", col(0xFFFBBF24), view == View_.ME, {
             closePicker(); see(View_.ME)
-        }, col(0xFFFBBF24), sub = myGo, act = myShare()))
+        }, col(0xFFFBBF24), sub = myGo, act = myAct()))
         others.forEach { p ->
             val hue = hueOf(p.id)
             val picked = whereOnly.contains(p.id)
@@ -2279,11 +2311,20 @@ class MainActivity : Activity() {
                    { shareDest(); if (pickPane.visibility == View.VISIBLE) drawPicker() })
         else null
 
-    /** 남의 줄의 「🔑 부르기」 칩 - 공개방에서 내가 아는 개인방이 있을 때만. */
+    /** 남의 줄의 「🔑 부르기」 칩 - 공개방에서 내가 아는 개인방이 있을 때만. 누르면 고름(☑)이 켜지고 꺼진다. */
     private fun invitePill(id: Int, name: String): Triple<String, Boolean, () -> Unit>? =
-        if (Pleos.inPublic && prefs.getString("onpttRoomCode", "").orEmpty().length == 6)
-            Triple("🔑 부르기", false, { inviteTo(id, name) })
-        else null
+        if (Pleos.inPublic && prefs.getString("onpttRoomCode", "").orEmpty().length == 6) {
+            val on = invitePick.containsKey(id)
+            Triple(if (on) "☑ 고름" else "🔑 부르기", on, { toggleInvite(id, name) })
+        } else null
+
+    /** 내 줄의 칩 - 부를 분을 골랐으면 「n명 부르고 같이 가기」, 아니면 목적지 공유. */
+    private fun myAct(): Triple<String, Boolean, () -> Unit>? {
+        if (!Pleos.inPublic) invitePick.clear()
+        return if (invitePick.isNotEmpty())
+            Triple("🔑 ${invitePick.size}명 부르고 같이 가기", true, { inviteGo() })
+        else myShare()
+    }
 
     /**
      * 사람마다 색. 지도 마크와 이름표 키가 같은 색을 쓴다. 나는 지도에서

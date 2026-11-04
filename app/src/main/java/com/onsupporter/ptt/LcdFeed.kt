@@ -89,6 +89,8 @@ object LcdFeed {
         } else if (lcd.rooms.isNotEmpty()) {
             lcd.rooms = IntArray(0); lcd.roomNames = emptyArray(); lcd.roomLive = BooleanArray(0)
         }
+        // 개인방(채널 하나) - 방 칩 줄 자리에 입장번호.
+        lcd.entry = if (chans.size <= 1) Radio.roomCode else ""
         // Z7 동작 줄 - 공개방에서만. 남이 말하는 동안 신고·안 듣기(막아 둔 분이면 다시 듣기),
         // 직전에 말한 분이 있으면 「직전 대화」(웹과 같은 글).
         lcd.acts = if (chans.size <= 1) emptyList() else buildList {

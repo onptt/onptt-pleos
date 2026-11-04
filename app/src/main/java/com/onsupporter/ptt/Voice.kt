@@ -95,6 +95,13 @@ class Mic(
     @Volatile var listen = false
 
     /**
+     * **시험 입력**(디버그 빌드의 `--es mic`). 마이크가 읽은 조각 자리에 이 소리(48kHz 16비트 모노)를
+     * 같은 속도로 넣는다 - 에뮬레이터 마이크가 무음일 때 VOX·레벨 미터·송신을 실제로 돌려 보는 자리.
+     * 다 읽으면 저절로 마이크로 돌아온다.
+     */
+    @Volatile var fake: java.io.InputStream? = null
+
+    /**
      * **마이크를 UDP 길이 쥐고 있나.**
      *
      * WebRTC 는 제 소리 장치로 마이크를 직접 연다 - 우리 AudioRecord 와
@@ -220,8 +227,15 @@ class Mic(
                 try { Thread.sleep(20) } catch (t: InterruptedException) { }
                 continue
             }
-            val n = try { r.read(chunk, 0, chunk.size) } catch (t: Throwable) { -1 }
+            var n = try { r.read(chunk, 0, chunk.size) } catch (t: Throwable) { -1 }
             if (n <= 0) { try { Thread.sleep(5) } catch (t: InterruptedException) { }; continue }
+            fake?.let { f ->
+                var got = 0
+                try {
+                    while (got < n) { val k = f.read(chunk, got, n - got); if (k < 0) break; got += k }
+                } catch (t: Throwable) { got = -1 }
+                if (got < n) { try { f.close() } catch (t: Throwable) { }; fake = null; java.util.Arrays.fill(chunk, 0, n, 0) }
+            }
             // **보내기 전에 잰다.** `live` 뒤에 두면 누르는 동안에만
             // 재게 되고, 그러면 VOX 는 영영 안 켜진다.
             onLevel?.let { it(rms(chunk, n)) }

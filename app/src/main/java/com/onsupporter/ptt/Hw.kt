@@ -190,6 +190,11 @@ class Lcd(ctx: Context) : View(ctx) {
     var roomLive: BooleanArray = BooleanArray(0); set(v) { field = v; invalidate() }
     var roomAt = -1; set(v) { field = v; invalidate() }
     /**
+     * **개인방 입장번호.** 개인방에는 채널이 「전체」 하나라 방 칩 줄이 비는데, 그 자리에 입장번호를
+     * 띄워 둔다 - 늦게 오는 일행에게 「몇 번이냐」 를 물으면 화면만 보고 바로 불러 준다.
+     */
+    var entry = ""; set(v) { if (field != v) { field = v; invalidate() } }
+    /**
      * 상태 칸에 채널 파형을 그리나 - 남이 말하면(RX) 받는 소리(Scope), 내가 말하면(TX)
      * 채널에 나가는 소리(TxScope). 웹 액정과 같다. 누름쇠의 막대는 따로 마이크 입력이다.
      */
@@ -358,6 +363,10 @@ class Lcd(ctx: Context) : View(ctx) {
         if (pub) {
             zActs.set(left, yb - s(L.Z7), right, yb); yb = zActs.top - s(L.GAP)
             zRooms.set(left, yb - s(L.Z6), right, yb); yb = zRooms.top - s(L.GAP)
+        } else if (entry.isNotBlank()) {
+            // 개인방 - 동작 줄은 없고 방 칩 줄 한 칸만 입장번호로 쓴다.
+            zActs.setEmpty()
+            zRooms.set(left, yb - s(L.ROOM_H), right, yb); yb = zRooms.top - s(L.GAP)
         } else { zActs.setEmpty(); zRooms.setEmpty() }
         zStrip.set(left, yb - s(L.Z5), right, yb); yb = zStrip.top - s(L.GAP)
         zSmall.set(left, yb - s(L.Z4), right, yb); yb = zSmall.top - s(L.GAP)
@@ -567,6 +576,17 @@ class Lcd(ctx: Context) : View(ctx) {
                 cx += cw + s(L.GAP)
             }
             ink.alpha = 255
+        }
+        // ── 개인방 입장번호(Z6 자리) - 누르는 칩이 아니라 적어 둔 글이다 ──
+        if (!pub && entry.isNotBlank()) {
+            val rh = s(L.ROOM_H); val rts = s(L.ROOM); val rp = s(8f)
+            ink.textSize = rts; ink.typeface = Typeface.DEFAULT_BOLD
+            val t = "🔑 입장번호 $entry"
+            tmp.set(left, zRooms.top, left + ink.measureText(t) + 2 * rp, zRooms.top + rh)
+            ink.style = Paint.Style.STROKE; ink.strokeWidth = s(1.2f)
+            cv.drawRoundRect(tmp, rh / 2, rh / 2, ink)
+            ink.style = Paint.Style.FILL
+            cv.drawText(t, tmp.left + rp, base(tmp, rts), ink)
         }
         // ── Z7 동작 줄(공개방) - 오른쪽부터. 신고는 붉은 글자 ──
         if (pub && acts.isNotEmpty()) {

@@ -1040,6 +1040,9 @@ object Radio {
     /** **사고 감지를 보낸다**(차 갈래의 Pleos.kt - 에어백 전개). 내 자리를 알면 같이. */
     fun sos() { link?.sos(svc?.spot) }
 
+    /** 시험 입력(디버그) - 마이크 자리에 이 소리 파일(48kHz 16비트 모노 PCM)을 넣는다. Mic.fake 참고. */
+    fun fakeMic(f: java.io.File) { mic?.fake = try { java.io.BufferedInputStream(f.inputStream()) } catch (t: Throwable) { null } }
+
     /** 공개방에서 개인방으로 부름이 왔다(부름 번호, 부른 분, 방 이름). 화면이 「들어가기」 판을 띄운다. */
     @Volatile var onInvite: ((String, String, String) -> Unit)? = null
     /** 내가 부른 분의 답(한 줄) - 무전 중에는 기록 줄이 화면에 안 뜨니 따로 띄운다. */
