@@ -12,9 +12,9 @@
 - 앱 파일: [`apk/채한석_onPTT_release.apk`](apk/채한석_onPTT_release.apk)
 - 웹 버전(설치 없이 참여): https://onsupporter.com/ptt
 - 사용 설명서: https://onsupporter.com/ptt/manual
-- 시연 영상(Pleos Connect 에뮬레이터 실제 화면, 음성 해설): [요약 6분](https://github.com/onptt/onptt-pleos/releases/download/v1.6.10/onPTT_demo_0_summary.mp4) ·
-  [1편 화면 설명 10분](https://github.com/onptt/onptt-pleos/releases/download/v1.6.10/onPTT_demo_1_screens.mp4) · [2편 공개방 사용 6분](https://github.com/onptt/onptt-pleos/releases/download/v1.6.10/onPTT_demo_2_public.mp4) ·
-  [3편 개인방 사용 6분](https://github.com/onptt/onptt-pleos/releases/download/v1.6.10/onPTT_demo_3_private.mp4) — [Releases](https://github.com/onptt/onptt-pleos/releases/tag/v1.6.10) 에도 모아 두었습니다.
+- 시연 영상(Pleos Connect 에뮬레이터 실제 화면, 음성 해설): [요약 6분](video/onPTT_demo_0_summary.mp4) ·
+  [1편 화면 설명 10분](video/onPTT_demo_1_screens.mp4) · [2편 공개방 사용 6분](video/onPTT_demo_2_public.mp4) ·
+  [3편 개인방 사용 6분](video/onPTT_demo_3_private.mp4) — 파일은 [`video/`](video) 폴더에 있습니다.
 
 ## 주요 기능
 
