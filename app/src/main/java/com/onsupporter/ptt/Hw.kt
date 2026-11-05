@@ -217,6 +217,11 @@ class Lcd(ctx: Context) : View(ctx) {
      * (받기·거절·그만·끊기). 비어 있지 않으면 사람 칩 대신 이 줄을 그린다.
      */
     var callLine = ""; set(v) { field = v; invalidate() }
+    /**
+     * **두 곳에서 동시에 말이 들어온다**(1:1 중의 전체 무전, 전체 중의 1:1, 웹과 같다). 비어 있지 않으면
+     * 사람 줄(Z2)을 호박 띠로 덮고 깜빡인다 - 두 목소리가 섞이면 소리만으로는 어느 쪽 말인지 모른다.
+     */
+    var also = ""; set(v) { if (field != v) { field = v; invalidate() } }
     var callActs: List<String> = emptyList(); set(v) { field = v; invalidate() }
     var onAct: ((String) -> Unit)? = null
     private val actHits = ArrayList<Pair<RectF, String>>()
@@ -450,7 +455,20 @@ class Lcd(ctx: Context) : View(ctx) {
             cv.drawText(text, r.left + cp, base(r, ink.textSize), ink)
             ink.color = tc; glow()
         }
-        if (callLine.isNotBlank()) {
+        if (also.isNotBlank()) {
+            // 1초에 한 번 두 색을 오간다(웹과 같은 박자).
+            val on = (System.currentTimeMillis() / 500) % 2 == 0L
+            ink.clearShadowLayer(); ink.style = Paint.Style.FILL
+            ink.color = if (on) col(0xFFFFB020) else col(0xFFFF7A00)
+            tmp.set(left, rowTop, right, rowTop + chH)
+            cv.drawRoundRect(tmp, s(8f), s(8f), ink)
+            ink.color = col(0xFF1A1000); ink.typeface = Typeface.DEFAULT_BOLD
+            var ts = cts * 1.1f; ink.textSize = ts
+            while (ink.measureText(also) > tmp.width() - 2 * cp && ts > cts * 0.75f) { ts -= s(0.5f); ink.textSize = ts }
+            cv.drawText(also, tmp.centerX() - ink.measureText(also) / 2f, base(tmp, ts), ink)
+            ink.color = pal[2]; ink.textSize = cts; glow()
+            postInvalidateDelayed(500)
+        } else if (callLine.isNotBlank()) {
             var cx = left
             ink.style = Paint.Style.FILL
             cv.drawText(callLine, cx, base(zPeople, cts), ink)

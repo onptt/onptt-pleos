@@ -330,12 +330,14 @@ object Pleos {
      * **소리 내어 읽는다.** 무전이 오가는 중(누가 말하거나 내가 말하는 중)이면 끝날 때까지 기다린다 -
      * 무전 소리와 겹치면 둘 다 못 알아듣는다. 15초 넘게 못 끼면 버린다(지난 소식은 소식이 아니다).
      */
-    fun say(text: String, tries: Int = 0) {
+    fun say(text: String, tries: Int = 0, still: (() -> Boolean)? = null) {
         if (!voiceOn || text.isBlank()) return
+        // 기다리는 사이 상황이 끝났으면 읽지 않는다(받거나 거절한 1:1 요청).
+        if (still != null && !still()) return
         val t = tts ?: return
         if (!ttsUp) return
         if ((Radio.holder.isNotEmpty() || Radio.mine) && tries < 30) {
-            main.postDelayed({ say(text, tries + 1) }, 500L)
+            main.postDelayed({ say(text, tries + 1, still) }, 500L)
             return
         }
         try { t.speak(text, true); Radio.announce(text) } catch (e: Throwable) { log("읽지 못했습니다 (${e.javaClass.simpleName})") }
@@ -385,6 +387,7 @@ object Pleos {
                     override fun onFailure(error: TtsError) { ttsUp = false; log("읽어 주기를 못 씁니다 ($error)") }
                 })
                 Radio.speak = { s -> main.post { say(s) } }
+                Radio.speakIf = { s, still -> main.post { say(s, 0, still) } }
             } catch (t: Throwable) {
                 tts = null
                 log("읽어 주기에 못 붙습니다 (${t.javaClass.simpleName})")
@@ -457,6 +460,7 @@ object Pleos {
         try { fused?.unregisterFusedLocationCallback(fusedEar); fused?.release() } catch (t: Throwable) { }
         fused = null
         Radio.speak = null
+        Radio.speakIf = null
         try { tts?.release() } catch (t: Throwable) { }
         try { stt?.removeListener(sttEar); stt?.release() } catch (t: Throwable) { }
         stt = null; sttUp = false

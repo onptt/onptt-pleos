@@ -16,8 +16,8 @@ android {
         // 폰이 그렇게까지 낡은 자리가 아니다.
         minSdk = 29
         targetSdk = 36
-        versionCode = 38
-        versionName = "1.6.8"
+        versionCode = 40
+        versionName = "1.6.10"
 
         /**
          * **폰에 들어가는 CPU 만 담는다.**

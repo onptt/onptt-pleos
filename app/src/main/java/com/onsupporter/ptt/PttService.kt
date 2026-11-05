@@ -879,6 +879,8 @@ object Radio {
     /** 보드를 한 번이라도 읽었나. 「새것」 은 그다음부터 센다. */
     @Volatile private var boardSeen = false
     @Volatile private var lastWhere = 0L
+    /** 일행 자리·상태를 다음 바퀴에 바로 받는다(8초를 안 기다린다). 디버그 시연(--es pull)이 쓴다. */
+    fun pullNow() { lastWhere = 0L }
     @Volatile private var lastState = 0L
     /** 자리를 올리는 행사인가. **표가 정한다** - 폰이 정하는 값이 아니다. */
     @Volatile var sharing = false; private set
@@ -1035,6 +1037,11 @@ object Radio {
      * 1:1 요청, 주정차 단속, 일행 도착 임박. 폰은 이 고리가 없어 아무것도 안 읽는다.
      */
     @Volatile var speak: ((String) -> Unit)? = null
+    /**
+     * **아직 맞는 말일 때만 읽는다**(두 번째 값이 거짓이 되면 버린다). 무전이 오가는 동안 읽기를 미루는데,
+     * 그사이 받거나 거절한 1:1 요청을 「요청합니다」 로 늦게 읽었다 - 사고 안내 뒤에 줄 서 있다가.
+     */
+    @Volatile var speakIf: ((String, () -> Boolean) -> Unit)? = null
     /** 같은 채널 사람의 사고 감지가 왔다(이름, 위도, 경도 - 모르면 null). 차 화면이 큰 판을 띄운다. */
     @Volatile var onSos: ((String, Double?, Double?) -> Unit)? = null
 
@@ -1046,8 +1053,24 @@ object Radio {
      * 같은 글을 띄운다 - 무전 소리와 안내 소리가 귀로는 안 갈린다(주행 가능 거리 부족 같은 알림이
      * 누가 무전한 것인지 헷갈렸다). 읽는 데 걸릴 만큼(글자당 0.17초 + 1.5초) 띄우고 거둔다.
      */
+    /** **1:1 이 끝났다는 말** - 액정에 잠깐(4초) 띄운다. 따로 창을 띄우지 않는다(웹과 같다). */
+    @Volatile var ended = ""; private set
+    private var endedAt = 0L
+    private fun endedSay(text: String) {
+        ended = text; endedAt = System.currentTimeMillis()
+        hand.postDelayed({
+            if (System.currentTimeMillis() - endedAt >= 3_950L) { ended = ""; changed() }
+        }, 4_000L)
+    }
     @Volatile var notice = ""; private set
     private var noticeEnd = 0L
+    /**
+     * **받거나 끊은 1:1 의 안내 글을 거둔다.** 받기를 눌러 이미 이어졌는데 표시창에
+     * 「…님이 일 대 일 무전을 요청합니다」 가 읽는 시간만큼 그대로 남아 있었다.
+     */
+    private fun dropCallNotice() {
+        if (notice.contains("일 대 일 무전")) { notice = ""; noticeEnd = 0L }
+    }
     fun announce(text: String) {
         if (text.isBlank()) return
         val ms = (text.length * 170L + 1_500L).coerceIn(2_500L, 12_000L)
@@ -1241,7 +1264,9 @@ object Radio {
                         it.open()
                     }
                 }
-                if (bg == null) bg = Speaker().also { it.duck = 0.35f; it.open() }
+                // 1:1 중에 오는 전체 무전도 **같은 크기로**(웹과 같다) - 35% 로 물렸더니 9dB 아래로 깔려 말이 안 들렸다.
+                // 대신 들어오는 순간 띠링(Chime)과 액정 띠로 알린다. 따로 둔 것은 지터 버퍼를 나누려는 것이다.
+                if (bg == null) bg = Speaker().also { it.open() }
                 Net.reset()
                 link = Link(got.ws, got.ticket, consented || !got.record,
                             { whereOk }, ::event) { cid, _, frame ->
@@ -1618,7 +1643,9 @@ object Radio {
                 onBuzz?.invoke("call")
                 // 앱을 닫아 두었어도 알아야 한다. 알림에서 바로 받는다.
                 svc?.ring(c.withName)
-                speak?.invoke("${c.withName} 님이 일 대 일 무전을 요청합니다")
+                val ask = "${c.withName} 님이 일 대 일 무전을 요청합니다"
+                val still = { calls.any { it.ch == c.ch && it.state == "incoming" } }
+                speakIf?.invoke(ask, still) ?: speak?.invoke(ask)
                 changed("📞 ${c.withName} 님이 부릅니다")
             }
             "RINGING" -> {
@@ -1631,6 +1658,7 @@ object Radio {
                 val ch = m.optInt("channel", -1)
                 callAt(ch)?.state = "on"
                 if (ch >= 0) talkTo(ch)
+                dropCallNotice()
                 changed("${m.optJSONObject("who")?.optString("name")} 님과 1:1")
             }
             "DECLINED" -> {
@@ -1648,7 +1676,10 @@ object Radio {
                 val ch = m.optInt("channel", -1)
                 val was = callAt(ch)?.state
                 val who2 = m.optJSONObject("who")?.optString("name") ?: ""
+                val with = callAt(ch)?.withName ?: who2
                 calls.removeAll { it.ch == ch }; callTalker.remove(ch)
+                dropCallNotice()
+                if (was == "on") endedSay("${if (with.isNotBlank()) "$with 님과의 " else ""}1:1 대화가 종료되었습니다")
                 // 다른 1:1 에 말하던 중이면 그대로 둔다.
                 if (channelId == ch) backToChannel()
                 if (calls.none { it.state == "incoming" }) svc?.unring()
@@ -1716,8 +1747,11 @@ object Radio {
                     // 곁 채널. 1:1 을 하는 동안 전체에서 누가 말하는지도
                     // 알아야 한다 - 끊고 그쪽으로 갈지 정하는 것이 그것을
                     // 보고 하는 판단이다.
+                    val was = aside
                     aside = if (channels.any { it.first == cid }) name else ""
                     bg?.fresh()
+                    // **1:1 중에 전체 무전이 들어왔다 - 띠링**(웹과 같다). 운전 중에는 액정 띠를 못 본다.
+                    if (aside.isNotBlank() && was.isBlank() && liveCalls.isNotEmpty()) Chime.play()
                     if (aside.isNotBlank()) changed("전체 · $aside 님이 말하는 중")
                     else changed()
                 }
@@ -1887,11 +1921,13 @@ object Radio {
     fun answer() = calls.firstOrNull { it.state == "incoming" }?.let {
         link?.answer(it.ch); it.state = "on"; talkTo(it.ch)
         if (calls.none { c -> c.state == "incoming" }) svc?.unring()
+        dropCallNotice()
         changed()
     }
     fun decline() = calls.firstOrNull { it.state == "incoming" }?.let {
         link?.decline(it.ch); calls.remove(it)
         if (calls.none { c -> c.state == "incoming" }) svc?.unring()
+        dropCallNotice()
         changed()
     }
     /** 화면이 붙든 1:1([call])을 끊는다(부르는 중이면 그만). */
@@ -1902,6 +1938,10 @@ object Radio {
         if (calls.none { it.state == "incoming" }) svc?.unring()
         if (calls.isEmpty()) aside = ""
         if (channelId == c.ch) backToChannel()
+        dropCallNotice()
+        // **끊은 쪽에도 끝났다고 적는다.** 서버의 ENDED 는 상대에게만 가서, 끊은 쪽은 말없이
+        // STAND BY 로 돌아갔다 - 받은 쪽만 「1:1 종료」 를 보고 두 화면이 달랐다.
+        if (c.state == "on") endedSay("${if (c.withName.isNotBlank()) "${c.withName} 님과의 " else ""}1:1 대화가 종료되었습니다")
         changed()
     }
     /** 1:1 을 다 끊는다(개인방 노브 「전체」 꾹). */

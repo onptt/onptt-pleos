@@ -50,6 +50,11 @@ object LcdFeed {
                 lcd.tone = Lcd.Tone.RX; lcd.big = Radio.aside; lcd.small = toAll(Radio.aside)
                 mode = PttKey.Mode.RX
             }
+            // 1:1 이 끝났다 - 따로 창을 띄우지 않고 액정에(웹과 같다).
+            Radio.ended.isNotBlank() -> {
+                lcd.tone = Lcd.Tone.COOL; lcd.big = "1:1 종료"; lcd.small = Radio.ended
+                mode = PttKey.Mode.IDLE
+            }
             // 음성 안내를 읽는 동안 - 무전이 아니라 차가 읽어 주는 말이라는 것을 보이고, 같은 글을 아랫줄에.
             Radio.notice.isNotBlank() -> {
                 lcd.tone = Lcd.Tone.COOL; lcd.big = "🔊 음성 안내"; lcd.small = Radio.notice
@@ -115,6 +120,16 @@ object LcdFeed {
         lcd.callLine = when (call?.state) {
             "incoming" -> "📞 ${call.withName} 님"
             "ringing" -> "📞 ${call.withName} 님 부르는 중…"
+            else -> ""
+        }
+        /*
+         * **두 곳에서 동시에 말이 들어온다(웹과 같다).** 1:1 로 듣거나 말하는 중에 전체에서도 누가 말하면
+         * (상대는 내가 1:1 중인 것을 모른다) 사람 줄을 덮어 크게 알린다 - 1:1 을 멈추고 들을지 정하게.
+         */
+        lcd.also = when {
+            lcd.callLine.isNotBlank() || (!Radio.mine && who.isBlank()) || Radio.liveCalls.isEmpty() -> ""
+            talk != null && Radio.aside.isNotBlank() -> "📢 전체 무전이 들어오고 있습니다 · ${Radio.aside}"
+            talk == null && farCall != null -> "📞 1:1 · $farCall 님도 말하는 중입니다"
             else -> ""
         }
         lcd.callActs = when (call?.state) {

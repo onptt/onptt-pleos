@@ -12,12 +12,15 @@
 - 앱 파일: [`apk/채한석_onPTT_release.apk`](apk/채한석_onPTT_release.apk)
 - 웹 버전(설치 없이 참여): https://onsupporter.com/ptt
 - 사용 설명서: https://onsupporter.com/ptt/manual
+- 시연 영상(Pleos Connect 에뮬레이터 실제 화면, 음성 해설): [요약 6분](https://github.com/onptt/onptt-pleos/releases/download/v1.6.10/onPTT_demo_0_summary.mp4) ·
+  [1편 화면 설명 10분](https://github.com/onptt/onptt-pleos/releases/download/v1.6.10/onPTT_demo_1_screens.mp4) · [2편 공개방 사용 6분](https://github.com/onptt/onptt-pleos/releases/download/v1.6.10/onPTT_demo_2_public.mp4) ·
+  [3편 개인방 사용 6분](https://github.com/onptt/onptt-pleos/releases/download/v1.6.10/onPTT_demo_3_private.mp4) — [Releases](https://github.com/onptt/onptt-pleos/releases/tag/v1.6.10) 에도 모아 두었습니다.
 
 ## 주요 기능
 
 | 기능 | 내용 |
 |---|---|
-| 그룹 무전 | 송신 버튼을 누르고 말하면 같은 채널 사용자에게 바로 전달됩니다. 일대일 무전도 지원합니다. |
+| 그룹 무전 | 송신 버튼을 누르고 말하면 같은 채널 사용자에게 바로 전달됩니다. 일대일 무전도 지원하며, 일대일 중에도 전체 무전은 띠링 소리와 표시창 알림과 함께 같은 크기로 들립니다. |
 | 스티어링 휠 버튼 송신 \* | 화면을 보지 않고 스티어링 휠의 탐색 아래 버튼을 누르고 있는 동안 송신합니다. 탐색 위 버튼은 음성 명령을 시작합니다. |
 | 공개방 · 개인방 | 공개방은 이름만으로 입장합니다. 개인방은 회원가입 후 만드는 폐쇄형 방으로, 입장코드를 아는 일행만 참여합니다. 개인방에서는 표시창에 입장번호가 늘 표시되어, 늦게 오는 일행에게 바로 알려 줄 수 있습니다. |
 | 일행 한 번에 부르기 | 공개방 일행 목록에서 부를 사람을 고른(☑) 뒤 「n명 부르고 같이 가기」 를 누르면, 고른 일행에게 개인방 초대가 가고 나도 함께 개인방으로 옮깁니다. 받은 일행은 「들어가기」 한 번이면 됩니다. |
@@ -37,6 +40,7 @@
 - **음성 명령** — 스피커 오른쪽 아래의 마이크 버튼이나 스티어링 휠 버튼으로 시작합니다.
   예: 「1번 채널」, 「앞차 길 안내」, 「같은 곳」, 「사고 자리」, 「입장코드 일이삼 사오육」, 「(이름) 길 안내」, 「들어가기」
 - **음성 안내** — 명령 결과, 일대일 요청, 개인방 초대, 일행 도착 임박, 주행 가능 거리 부족을 음성으로 알립니다.
+  읽는 동안 표시창에 「🔊 음성 안내」 와 그 글을 함께 띄워, 무전 소리와 구분됩니다. 무전 중에는 무전이 끝난 뒤에 읽습니다.
 - **스티어링 휠 버튼** — 무전 화면이 표시된 상태에서 탐색 아래 버튼을 누르고 있으면 송신하고, 탐색 위 버튼을 누르면
   음성 명령을 시작합니다. 내비게이션 등 다른 앱이 화면에 있을 때는 원래의 곡 이동 기능으로 동작합니다.
 - **주행 중 제한** — P단이 아닐 때는 설정과 글자 입력을 막습니다. P단에 정차하면 주정차 단속 구간을 알립니다.
@@ -76,7 +80,7 @@ app/src/phone  스마트폰 앱 화면
 
 ## APK 파일 위치
 
-- [`apk/채한석_onPTT_release.apk`](apk/채한석_onPTT_release.apk) — Pleos Connect 앱 1.6.8 (release)
+- [`apk/채한석_onPTT_release.apk`](apk/채한석_onPTT_release.apk) — Pleos Connect 앱 1.6.10 (release)
 - 파일 확인값(SHA-256): [`apk/SHA256SUMS.txt`](apk/SHA256SUMS.txt)
 
 ## 실행 방법

@@ -279,6 +279,10 @@ class MainActivity : Activity() {
         if (i?.getStringExtra("sos") != null) Pleos.sos()
         // `--es heard "1번 채널"` - 받아쓴 말이 들어온 것처럼(에뮬레이터 마이크로 말할 수 없을 때).
         i?.getStringExtra("heard")?.let { heard(it) }
+        // `--es say '글'` - 플레오스 음성으로 그 글을 읽는다(시연 영상에 얹을 차 목소리를 깨끗하게 받을 때).
+        i?.getStringExtra("say")?.let { Pleos.say(it) }
+        // `--es pull 1` - 일행 자리·상태를 지금 받는다(시연 영상에서 일행 상태가 바뀐 뒤 안내가 늦게 나오지 않게).
+        if (i?.getStringExtra("pull") != null) Radio.pullNow()
         // `--es mic vox.pcm` - 앱 files 의 그 소리를 마이크 입력으로 넣는다(에뮬레이터 마이크가 무음일 때 VOX 시연).
         i?.getStringExtra("mic")?.let { Radio.fakeMic(java.io.File(filesDir, it)) }
         // `--es nick 그랜저` - 이름 칸을 채운다(adb 로는 한글을 칠 수 없다. 시연 영상 찍기).
