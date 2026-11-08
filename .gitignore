@@ -7,3 +7,5 @@ app/build/
 .DS_Store
 .idea/
 !apk/*.apk
+# Claude Code 로컬 설정 (승인 규칙에 비밀값이 평문 저장될 수 있음)
+.claude/settings.local.json
